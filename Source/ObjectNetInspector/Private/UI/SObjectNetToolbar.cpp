@@ -1,6 +1,7 @@
 #include "ObjectNetProvider.h"
 
 #include "Misc/DefaultValueHelper.h"
+#include "Styling/SlateColor.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
@@ -48,6 +49,7 @@ public:
                 .Padding(8.0f, 0.0f, 0.0f, 0.0f)
                 [
                     SNew(STextBlock)
+                    .ColorAndOpacity(this, &SObjectNetToolbar::GetDataSourceColor)
                     .Text(this, &SObjectNetToolbar::GetDataSourceText)
                 ]
 
@@ -176,7 +178,23 @@ private:
 
     FText GetDataSourceText() const
     {
-        return FText::FromString(FString::Printf(TEXT("Source: %s"), *Provider->GetLastDataSourceLabel()));
+        return FText::FromString(FString::Printf(
+            TEXT("Source: %s (%d events)"),
+            *Provider->GetLastDataSourceLabel(),
+            Provider->GetLastEventCount()));
+    }
+
+    FSlateColor GetDataSourceColor() const
+    {
+        switch (Provider->GetLastDataSourceKind())
+        {
+        case EObjectNetDataSourceKind::Session:
+            return FSlateColor(FLinearColor(0.55f, 0.85f, 0.55f));
+        case EObjectNetDataSourceKind::Mock:
+            return FSlateColor(FLinearColor(0.95f, 0.80f, 0.35f));
+        default:
+            return FSlateColor(FLinearColor::White);
+        }
     }
 
     void OnSearchCommitted(const FText& InText, ETextCommit::Type)

@@ -2,6 +2,7 @@
 
 FObjectNetProvider::FObjectNetProvider()
     : LastDataSourceKind(EObjectNetDataSourceKind::Unknown)
+    , LastEventCount(0)
 {
 }
 
@@ -19,6 +20,7 @@ void FObjectNetProvider::Refresh()
     }
 
     Analyzer.Rebuild(TraceReader.GetEvents());
+    LastEventCount = Analyzer.GetEvents().Num();
     CurrentAggregates = Aggregator.BuildAggregates(Analyzer, CurrentQuery);
 
     if (SelectedObjectId.IsSet())
@@ -118,6 +120,11 @@ FString FObjectNetProvider::GetLastDataSourceLabel() const
     default:
         return TEXT("Unknown");
     }
+}
+
+int32 FObjectNetProvider::GetLastEventCount() const
+{
+    return LastEventCount;
 }
 
 FObjectNetTraceReader& FObjectNetProvider::GetReader()

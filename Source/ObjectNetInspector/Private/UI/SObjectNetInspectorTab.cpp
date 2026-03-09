@@ -1,3 +1,4 @@
+#include "ObjectNetInspectorTab.h"
 #include "ObjectNetProvider.h"
 #include "ObjectNetInsightsBridge.h"
 

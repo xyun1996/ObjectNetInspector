@@ -1,14 +1,11 @@
-#include "ObjectNetProvider.h"
+#include "ObjectNetInspectorTab.h"
 
 #include "Framework/Docking/TabManager.h"
 #include "Modules/ModuleManager.h"
-#include "Widgets/Docking/SDockTab.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogObjectNetInspector, Log, All);
 
 static const FName ObjectNetInspectorTabId(TEXT("ObjectNetInspector.MainTab"));
-
-TSharedRef<SDockTab> SpawnObjectNetInspectorTab(const FSpawnTabArgs& SpawnTabArgs);
 
 class FObjectNetInspectorModule : public IModuleInterface
 {

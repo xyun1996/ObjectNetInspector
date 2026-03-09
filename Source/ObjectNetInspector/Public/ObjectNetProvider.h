@@ -33,6 +33,7 @@ public:
 
     EObjectNetDataSourceKind GetLastDataSourceKind() const;
     FString GetLastDataSourceLabel() const;
+    int32 GetLastEventCount() const;
 
     FObjectNetTraceReader& GetReader();
     const FObjectNetTraceReader& GetReader() const;
@@ -46,4 +47,5 @@ private:
     TOptional<uint64> SelectedObjectId;
     TArray<FObjectNetAggregate> CurrentAggregates;
     EObjectNetDataSourceKind LastDataSourceKind;
+    int32 LastEventCount;
 };
