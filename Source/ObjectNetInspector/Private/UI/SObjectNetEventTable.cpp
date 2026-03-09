@@ -7,6 +7,12 @@
 #include "Widgets/Views/SListView.h"
 #include "Widgets/Views/STableRow.h"
 
+namespace ObjectNetFormatting
+{
+FString FormatTimeSeconds(double TimeSec);
+FString FormatBitsAndBytes(const TOptional<uint64>& BitCount);
+}
+
 namespace ObjectNetEventTable
 {
 struct FRowItem
@@ -49,18 +55,6 @@ static FString KindToString(const EObjectNetEventKind Kind)
         return TEXT("Unknown");
     }
 }
-
-static FString BitsBytesToString(const TOptional<uint64>& Bits)
-{
-    if (!Bits.IsSet())
-    {
-        return TEXT("N/A");
-    }
-
-    const uint64 BitCount = Bits.GetValue();
-    const uint64 Bytes = (BitCount + 7ull) / 8ull;
-    return FString::Printf(TEXT("%llu / %llu"), BitCount, Bytes);
-}
 } // namespace ObjectNetEventTable
 
 class SObjectNetEventTable : public SCompoundWidget
@@ -91,7 +85,7 @@ public:
                 SNew(SHeaderRow)
 
                 + SHeaderRow::Column(TEXT("Time"))
-                .FixedWidth(70.0f)
+                .FixedWidth(90.0f)
                 .DefaultLabel(FText::FromString(TEXT("Time")))
                 .SortMode(this, &SObjectNetEventTable::GetSortModeForTime)
                 .OnSort(this, &SObjectNetEventTable::OnSortRequested)
@@ -117,7 +111,7 @@ public:
                 .DefaultLabel(FText::FromString(TEXT("Packet")))
 
                 + SHeaderRow::Column(TEXT("BitsBytes"))
-                .FixedWidth(90.0f)
+                .FixedWidth(150.0f)
                 .DefaultLabel(FText::FromString(TEXT("Bits/Bytes")))
             )
         ];
@@ -204,9 +198,9 @@ private:
             [
                 SNew(SHorizontalBox)
 
-                + SHorizontalBox::Slot().FillWidth(0.10f)
+                + SHorizontalBox::Slot().FillWidth(0.12f)
                 [
-                    SNew(STextBlock).Text(FText::FromString(FString::Printf(TEXT("%.3f"), Item->Event.TimeSec)))
+                    SNew(STextBlock).Text(FText::FromString(ObjectNetFormatting::FormatTimeSeconds(Item->Event.TimeSec)))
                 ]
 
                 + SHorizontalBox::Slot().FillWidth(0.14f)
@@ -224,7 +218,7 @@ private:
                     SNew(STextBlock).Text(FText::FromString(ObjectNetEventTable::KindToString(Item->Event.Kind)))
                 ]
 
-                + SHorizontalBox::Slot().FillWidth(0.28f)
+                + SHorizontalBox::Slot().FillWidth(0.26f)
                 [
                     SNew(STextBlock).Text(FText::FromString(Item->Event.EventName))
                 ]
@@ -236,7 +230,7 @@ private:
 
                 + SHorizontalBox::Slot().FillWidth(0.12f)
                 [
-                    SNew(STextBlock).Text(FText::FromString(ObjectNetEventTable::BitsBytesToString(Item->Event.BitCount)))
+                    SNew(STextBlock).Text(FText::FromString(ObjectNetFormatting::FormatBitsAndBytes(Item->Event.BitCount)))
                 ]
             ];
     }

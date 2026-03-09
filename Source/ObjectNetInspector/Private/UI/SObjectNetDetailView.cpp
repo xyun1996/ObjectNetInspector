@@ -6,6 +6,11 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Text/STextBlock.h"
 
+namespace ObjectNetFormatting
+{
+FString FormatKnownBitsToBytes(uint64 KnownBits);
+}
+
 namespace ObjectNetDetailView
 {
 static FString BuildTopSummary(const TMap<FString, uint32>& Counts)
@@ -133,8 +138,7 @@ private:
             return FText::GetEmpty();
         }
 
-        const uint64 Bytes = (Agg->TotalKnownBits + 7ull) / 8ull;
-        return FText::FromString(FString::Printf(TEXT("Known Bits/Bytes: %llu / %llu"), Agg->TotalKnownBits, Bytes));
+        return FText::FromString(FString::Printf(TEXT("Known: %s"), *ObjectNetFormatting::FormatKnownBitsToBytes(Agg->TotalKnownBits)));
     }
 
     FText GetTopRpcText() const
