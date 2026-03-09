@@ -1,15 +1,11 @@
 #include "ObjectNetProvider.h"
+#include "ObjectNetFormatting.h"
 
 #include "Algo/Sort.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Text/STextBlock.h"
-
-namespace ObjectNetFormatting
-{
-FString FormatKnownBitsToBytes(uint64 KnownBits);
-}
 
 namespace ObjectNetDetailView
 {

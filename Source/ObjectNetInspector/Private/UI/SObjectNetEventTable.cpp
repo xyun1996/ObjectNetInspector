@@ -1,4 +1,5 @@
 #include "ObjectNetProvider.h"
+#include "ObjectNetFormatting.h"
 
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SBoxPanel.h"
@@ -6,12 +7,6 @@
 #include "Widgets/Views/SHeaderRow.h"
 #include "Widgets/Views/SListView.h"
 #include "Widgets/Views/STableRow.h"
-
-namespace ObjectNetFormatting
-{
-FString FormatTimeSeconds(double TimeSec);
-FString FormatBitsAndBytes(const TOptional<uint64>& BitCount);
-}
 
 namespace ObjectNetEventTable
 {
@@ -133,7 +128,8 @@ public:
 private:
     uint32 BuildFingerprint() const
     {
-        uint32 Fingerprint = GetTypeHash(Provider->GetSelectedObjectId().Get(0ull));
+        const TOptional<uint64> SelectedObjectId = Provider->GetSelectedObjectId();
+        uint32 Fingerprint = GetTypeHash(SelectedObjectId.IsSet() ? SelectedObjectId.GetValue() : 0ull);
 
         const TArray<FObjectNetEvent> Events = Provider->GetSelectedObjectEvents();
         for (const FObjectNetEvent& Event : Events)
@@ -142,7 +138,7 @@ private:
             Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.ConnectionId));
             Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.PacketId));
             Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.EventName));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.BitCount.Get(0ull)));
+            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.BitCount.IsSet() ? Event.BitCount.GetValue() : 0ull));
         }
 
         return Fingerprint;
@@ -184,7 +180,11 @@ private:
             case ObjectNetEventTable::ESortColumn::Name:
                 return (SortMode == EColumnSortMode::Ascending) ? (L.EventName < R.EventName) : (L.EventName > R.EventName);
             case ObjectNetEventTable::ESortColumn::Bits:
-                return CompareU64(L.BitCount.Get(0ull), R.BitCount.Get(0ull));
+            {
+                const uint64 LBits = L.BitCount.IsSet() ? L.BitCount.GetValue() : 0ull;
+                const uint64 RBits = R.BitCount.IsSet() ? R.BitCount.GetValue() : 0ull;
+                return CompareU64(LBits, RBits);
+            }
             case ObjectNetEventTable::ESortColumn::Time:
             default:
                 return (SortMode == EColumnSortMode::Ascending) ? (L.TimeSec < R.TimeSec) : (L.TimeSec > R.TimeSec);

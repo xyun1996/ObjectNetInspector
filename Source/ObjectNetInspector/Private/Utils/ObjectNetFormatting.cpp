@@ -1,5 +1,4 @@
-#include "CoreMinimal.h"
-#include "Misc/Optional.h"
+#include "ObjectNetFormatting.h"
 
 namespace ObjectNetFormatting
 {

@@ -6,13 +6,10 @@ FObjectNetProvider::FObjectNetProvider()
 
 void FObjectNetProvider::Refresh()
 {
-    if (TraceReader.GetEvents().Num() == 0)
+    const bool bInitializedFromSession = TraceReader.InitializeFromActiveSession();
+    if (!bInitializedFromSession)
     {
-        const bool bInitializedFromSession = TraceReader.InitializeFromActiveSession();
-        if (!bInitializedFromSession)
-        {
-            TraceReader.LoadMockDataForTesting();
-        }
+        TraceReader.LoadMockDataForTesting();
     }
 
     Analyzer.Rebuild(TraceReader.GetEvents());
