@@ -1,0 +1,34 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1.0",
+  "FriendlyName": "Object Net Inspector",
+  "Description": "Unreal Insights extension panel for object-level network analysis (MVP).",
+  "Category": "Insights",
+  "CreatedBy": "ObjectNetInspector",
+  "CreatedByURL": "",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "CanContainContent": false,
+  "IsBetaVersion": true,
+  "IsExperimentalVersion": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "ObjectNetInspector",
+      "Type": "Developer",
+      "LoadingPhase": "PostEngineInit"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "TraceInsights",
+      "Enabled": true
+    },
+    {
+      "Name": "NetworkingInsights",
+      "Enabled": true
+    }
+  ]
+}
