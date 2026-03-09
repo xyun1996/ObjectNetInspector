@@ -44,6 +44,15 @@ public:
 
                 + SHorizontalBox::Slot()
                 .AutoWidth()
+                .VAlign(VAlign_Center)
+                .Padding(8.0f, 0.0f, 0.0f, 0.0f)
+                [
+                    SNew(STextBlock)
+                    .Text(this, &SObjectNetToolbar::GetDataSourceText)
+                ]
+
+                + SHorizontalBox::Slot()
+                .AutoWidth()
                 .Padding(8.0f, 0.0f, 0.0f, 0.0f)
                 [
                     SNew(SButton)
@@ -163,6 +172,11 @@ private:
     void ApplyQuery()
     {
         Provider->SetQuery(CachedQuery);
+    }
+
+    FText GetDataSourceText() const
+    {
+        return FText::FromString(FString::Printf(TEXT("Source: %s"), *Provider->GetLastDataSourceLabel()));
     }
 
     void OnSearchCommitted(const FText& InText, ETextCommit::Type)

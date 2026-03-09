@@ -6,6 +6,13 @@
 #include "ObjectNetAnalyzer.h"
 #include "ObjectNetQuery.h"
 
+enum class EObjectNetDataSourceKind : uint8
+{
+    Unknown,
+    Session,
+    Mock
+};
+
 /** Thin UI-facing coordinator around reader, analyzer, and aggregator. */
 class FObjectNetProvider
 {
@@ -24,6 +31,9 @@ public:
     TOptional<FObjectNetAggregate> GetSelectedAggregate() const;
     TArray<FObjectNetEvent> GetSelectedObjectEvents() const;
 
+    EObjectNetDataSourceKind GetLastDataSourceKind() const;
+    FString GetLastDataSourceLabel() const;
+
     FObjectNetTraceReader& GetReader();
     const FObjectNetTraceReader& GetReader() const;
 
@@ -35,4 +45,5 @@ private:
     FObjectNetQuery CurrentQuery;
     TOptional<uint64> SelectedObjectId;
     TArray<FObjectNetAggregate> CurrentAggregates;
+    EObjectNetDataSourceKind LastDataSourceKind;
 };

@@ -1,4 +1,5 @@
 #include "ObjectNetProvider.h"
+#include "ObjectNetInsightsBridge.h"
 
 #include "Framework/Docking/TabManager.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -23,6 +24,11 @@ public:
     void Construct(const FArguments& InArgs)
     {
         Provider = MakeShared<FObjectNetProvider>();
+        Provider->GetReader().SetSessionReader(
+            [](TArray<FObjectNetEvent>& OutEvents)
+            {
+                return FObjectNetInsightsBridge::TryReadActiveSession(OutEvents);
+            });
         Provider->Refresh();
 
         ChildSlot

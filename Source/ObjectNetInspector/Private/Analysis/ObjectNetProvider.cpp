@@ -1,6 +1,7 @@
 #include "ObjectNetProvider.h"
 
 FObjectNetProvider::FObjectNetProvider()
+    : LastDataSourceKind(EObjectNetDataSourceKind::Unknown)
 {
 }
 
@@ -10,6 +11,11 @@ void FObjectNetProvider::Refresh()
     if (!bInitializedFromSession)
     {
         TraceReader.LoadMockDataForTesting();
+        LastDataSourceKind = EObjectNetDataSourceKind::Mock;
+    }
+    else
+    {
+        LastDataSourceKind = EObjectNetDataSourceKind::Session;
     }
 
     Analyzer.Rebuild(TraceReader.GetEvents());
@@ -94,6 +100,24 @@ TArray<FObjectNetEvent> FObjectNetProvider::GetSelectedObjectEvents() const
     });
 
     return FilteredEvents;
+}
+
+EObjectNetDataSourceKind FObjectNetProvider::GetLastDataSourceKind() const
+{
+    return LastDataSourceKind;
+}
+
+FString FObjectNetProvider::GetLastDataSourceLabel() const
+{
+    switch (LastDataSourceKind)
+    {
+    case EObjectNetDataSourceKind::Session:
+        return TEXT("Session");
+    case EObjectNetDataSourceKind::Mock:
+        return TEXT("Mock");
+    default:
+        return TEXT("Unknown");
+    }
 }
 
 FObjectNetTraceReader& FObjectNetProvider::GetReader()
