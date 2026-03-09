@@ -1,5 +1,9 @@
 #include "ObjectNetAnalyzer.h"
 
+#include "Modules/ModuleManager.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogObjectNetTraceReader, Log, All);
+
 namespace ObjectNetTraceReader
 {
 static FObjectNetEvent MakeEvent(
@@ -35,8 +39,27 @@ bool FObjectNetTraceReader::InitializeFromActiveSession()
 {
     Reset();
 
-    // TODO: Replace this stub with real extraction from the active Unreal Insights session.
-    // Keep this returning false until verified Trace/Networking Insights APIs are integrated.
+    if (SessionReader)
+    {
+        TArray<FObjectNetEvent> SessionEvents;
+        if (SessionReader(SessionEvents))
+        {
+            Events = MoveTemp(SessionEvents);
+            return true;
+        }
+    }
+
+    // TODO: Wire real extraction from the active Unreal Insights networking analysis session.
+    // We intentionally do not guess uncertain API names here.
+    const bool bTraceInsightsLoaded = FModuleManager::Get().IsModuleLoaded(TEXT("TraceInsights"));
+    const bool bNetworkingInsightsLoaded = FModuleManager::Get().IsModuleLoaded(TEXT("NetworkingInsights"));
+    UE_LOG(
+        LogObjectNetTraceReader,
+        Verbose,
+        TEXT("No session reader bound. TraceInsightsLoaded=%s NetworkingInsightsLoaded=%s"),
+        bTraceInsightsLoaded ? TEXT("true") : TEXT("false"),
+        bNetworkingInsightsLoaded ? TEXT("true") : TEXT("false"));
+
     return false;
 }
 
@@ -70,6 +93,16 @@ void FObjectNetTraceReader::LoadMockDataForTesting()
     Events.Add(ObjectNetTraceReader::MakeEvent(1.140, 2, 1003, TEXT("BP_GameState_C_0"), TEXT("/Game/Maps/Arena.Arena:PersistentLevel.BP_GameState_C_0"), TEXT("BP_GameState_C"), EObjectNetEventKind::Property, EObjectNetDirection::Outgoing, TEXT("TeamScores"), 3004, 80ull));
     Events.Add(ObjectNetTraceReader::MakeEvent(1.180, 2, 1003, TEXT("BP_GameState_C_0"), TEXT("/Game/Maps/Arena.Arena:PersistentLevel.BP_GameState_C_0"), TEXT("BP_GameState_C"), EObjectNetEventKind::Rpc, EObjectNetDirection::Outgoing, TEXT("MulticastRoundState"), 3004, 88ull));
     Events.Add(ObjectNetTraceReader::MakeEvent(1.260, 1, 1003, TEXT("BP_GameState_C_0"), TEXT("/Game/Maps/Arena.Arena:PersistentLevel.BP_GameState_C_0"), TEXT("BP_GameState_C"), EObjectNetEventKind::PacketRef, EObjectNetDirection::Outgoing, TEXT("PacketRefOnly"), 3006, TOptional<uint64>()));
+}
+
+void FObjectNetTraceReader::SetSessionReader(FSessionReader InSessionReader)
+{
+    SessionReader = MoveTemp(InSessionReader);
+}
+
+bool FObjectNetTraceReader::HasSessionReader() const
+{
+    return static_cast<bool>(SessionReader);
 }
 
 const TArray<FObjectNetEvent>& FObjectNetTraceReader::GetEvents() const

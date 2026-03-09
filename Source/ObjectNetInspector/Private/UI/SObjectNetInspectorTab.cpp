@@ -1,5 +1,7 @@
 #include "ObjectNetProvider.h"
 
+#include "Framework/Docking/TabManager.h"
+#include "Widgets/Docking/SDockTab.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -10,10 +12,10 @@ TSharedRef<SWidget> MakeObjectNetObjectListWidget(const TSharedRef<FObjectNetPro
 TSharedRef<SWidget> MakeObjectNetDetailViewWidget(const TSharedRef<FObjectNetProvider>& Provider);
 TSharedRef<SWidget> MakeObjectNetEventTableWidget(const TSharedRef<FObjectNetProvider>& Provider);
 
-class SObjectNetInspectorTab : public SCompoundWidget
+class SObjectNetInspectorPanel : public SCompoundWidget
 {
 public:
-    SLATE_BEGIN_ARGS(SObjectNetInspectorTab)
+    SLATE_BEGIN_ARGS(SObjectNetInspectorPanel)
     {
     }
     SLATE_END_ARGS()
@@ -87,3 +89,12 @@ public:
 private:
     TSharedPtr<FObjectNetProvider> Provider;
 };
+
+TSharedRef<SDockTab> SpawnObjectNetInspectorTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+    return SNew(SDockTab)
+        .TabRole(ETabRole::NomadTab)
+        [
+            SNew(SObjectNetInspectorPanel)
+        ];
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Templates/Function.h"
 #include "ObjectNetQuery.h"
 #include "ObjectNetTypes.h"
 
@@ -11,14 +12,20 @@
 class FObjectNetTraceReader
 {
 public:
+    using FSessionReader = TFunction<bool(TArray<FObjectNetEvent>& OutEvents)>;
+
     bool InitializeFromActiveSession();
     void Reset();
     void LoadMockDataForTesting();
+
+    void SetSessionReader(FSessionReader InSessionReader);
+    bool HasSessionReader() const;
 
     const TArray<FObjectNetEvent>& GetEvents() const;
 
 private:
     TArray<FObjectNetEvent> Events;
+    FSessionReader SessionReader;
 };
 
 /**
