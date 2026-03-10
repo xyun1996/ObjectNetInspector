@@ -41,6 +41,8 @@
 - 分类规则：
   - RPC 关键词：`rpc/function/remotefunction/callremote/sendrpc/netmulticast`
   - Property 关键词：`property/replayout/repstate/rep/pushmodel/changelist/state/delta/array/serializer`
+  - 弱信号阈值：单侧评分小于 2 时不直接定类（避免 `remote/state` 等弱词导致误判）
+  - 混合冲突回退：同时出现 `rep` 与 `rpc/function` 且双方都非强信号时，回退 `Unknown`（例如 `ServerRepFunction`）
   - 关键词都未命中时，按 `EventTypeLevel`/`ContentLevel` 做 Property 回退
   - 仍无信号时归为 `Unknown`
 

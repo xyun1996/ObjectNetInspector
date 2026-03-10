@@ -44,6 +44,11 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::Rpc));
 
     TestEqual(
+        TEXT("Weak remote hint alone should stay Unknown"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("RemoteHandle"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Unknown));
+
+    TestEqual(
         TEXT("No keyword but high level should map to Property"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("CustomPayload"), 2, 0)),
         static_cast<uint8>(EObjectNetEventKind::Property));
@@ -51,6 +56,11 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
     TestEqual(
         TEXT("Server/client words alone should not force Rpc"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ServerPredictionData"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Unknown));
+
+    TestEqual(
+        TEXT("PrepareData should not be misclassified by rep substring"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("PrepareData"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Unknown));
 
     TestEqual(
