@@ -14,11 +14,8 @@ class FObjectNetInspectorModule : public IModuleInterface
 public:
     virtual void StartupModule() override
     {
-        IWorkspaceMenuStructureModule& WorkspaceMenuStructureModule =
-            FModuleManager::LoadModuleChecked<IWorkspaceMenuStructureModule>(TEXT("WorkspaceMenuStructure"));
-
         const TSharedRef<FWorkspaceItem> ProfilingCategory =
-            WorkspaceMenuStructureModule.GetWorkspaceMenuStructure().GetDeveloperToolsProfilingCategory();
+            WorkspaceMenu::GetMenuStructure().GetDeveloperToolsProfilingCategory();
 
         FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
                 ObjectNetInspectorTabId,

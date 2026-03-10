@@ -37,16 +37,23 @@
   - `BitCount`：`EndPos - StartPos`（仅 End>Start）
 
 ## 5. Kind 归因策略（当前）
-- 优先按事件名关键词匹配：
-  - RPC 类：`rpc/function/netmulticast/server/client`
-  - Property 类：`property/prop/rep/state/delta/array/serializer`
-- 其次按 level 作保守回退：`EventTypeLevel` 或 `ContentLevel` 较高时归为 Property。
-- 仍无法确定时归为 `Unknown`，避免硬编码误判。
+- 已抽离到 `FObjectNetEventClassifier`，避免 bridge 内部硬编码导致不可测。
+- 分类规则：
+  - RPC 关键词：`rpc/function/netmulticast/server/client`
+  - Property 关键词：`property/prop/rep/state/delta/array/serializer`
+  - 关键词都未命中时，按 `EventTypeLevel`/`ContentLevel` 做 Property 回退
+  - 仍无信号时归为 `Unknown`
 
 ## 6. 验证
-- 自动化测试：`ObjectNetInspector.Provider.FilteringAndAggregation`\n  - 覆盖过滤、聚合、`N/A` 行为。\n  - 已在 UE5.7 环境通过（Success）。\n  - 标准执行入口：`scripts/Run-ObjectNetTests.ps1`（说明见 `docs/TESTING.md`）。
+- 自动化测试：
+  - `ObjectNetInspector.Provider.FilteringAndAggregation`
+  - `ObjectNetInspector.Classifier.KindInference`
+- 标准执行入口：`scripts/Run-ObjectNetTests.ps1`（说明见 `docs/TESTING.md`）。
 
-## 7. 当前剩余工作`n1. 继续提升 `Kind` 归因准确率（降低 Unknown 与误判）`n2. 接入真实 `ClassName/ObjectPath`（若 provider 可提供）`n3. 已在 UE5.7 接入 Workspace Profiling 分类，后续做跨版本验证
+## 7. 当前剩余工作
+1. 继续提升 `Kind` 归因准确率（降低 Unknown 与误判）
+2. 接入真实 `ClassName/ObjectPath`（若 provider 可提供）
+3. 已在 UE5.7 接入 Workspace Profiling 分类，后续做跨版本验证
 
 ## 8. 文档维护约定
 - 每次做结构性改动（接口、口径、流程、取舍）时，同步更新本文件。

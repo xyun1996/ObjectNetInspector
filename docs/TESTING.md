@@ -8,6 +8,7 @@
 
 ## 2. 单测名称
 - `ObjectNetInspector.Provider.FilteringAndAggregation`
+- `ObjectNetInspector.Classifier.KindInference`
 
 ## 3. 推荐跑法（脚本）
 在仓库根目录执行：
@@ -37,5 +38,5 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
 ## 5. 编辑器内跑法（备选）
 - 打开编辑器
 - 打开 `Tools -> Session Frontend -> Automation`
-- 搜索 `ObjectNetInspector.Provider.FilteringAndAggregation`
+- 搜索对应测试名
 - 运行并确认结果为 Success

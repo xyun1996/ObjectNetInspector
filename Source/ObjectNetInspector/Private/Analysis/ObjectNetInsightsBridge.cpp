@@ -2,6 +2,7 @@
 
 #include "Insights/IUnrealInsightsModule.h"
 #include "Modules/ModuleManager.h"
+#include "ObjectNetEventClassifier.h"
 #include "ObjectNetTypes.h"
 #include "TraceServices/Model/AnalysisSession.h"
 #include "TraceServices/Model/NetProfiler.h"
@@ -39,61 +40,6 @@ static EObjectNetDirection ToDirection(const TraceServices::ENetProfilerConnecti
     default:
         return EObjectNetDirection::Unknown;
     }
-}
-
-static bool ContainsAny(const FString& Text, const TCHAR* const* Terms, const int32 TermCount)
-{
-    const ESearchCase::Type SearchCase = ESearchCase::IgnoreCase;
-    for (int32 Index = 0; Index < TermCount; ++Index)
-    {
-        if (Text.Contains(Terms[Index], SearchCase))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-static EObjectNetEventKind GuessEventKind(const FString& EventName, const uint16 EventTypeLevel, const uint8 ContentLevel)
-{
-    static const TCHAR* RpcTerms[] =
-    {
-        TEXT("rpc"),
-        TEXT("function"),
-        TEXT("netmulticast"),
-        TEXT("server"),
-        TEXT("client")
-    };
-
-    static const TCHAR* PropertyTerms[] =
-    {
-        TEXT("property"),
-        TEXT("prop"),
-        TEXT("rep"),
-        TEXT("state"),
-        TEXT("delta"),
-        TEXT("array"),
-        TEXT("serializer")
-    };
-
-    if (ContainsAny(EventName, RpcTerms, UE_ARRAY_COUNT(RpcTerms)))
-    {
-        return EObjectNetEventKind::Rpc;
-    }
-
-    if (ContainsAny(EventName, PropertyTerms, UE_ARRAY_COUNT(PropertyTerms)))
-    {
-        return EObjectNetEventKind::Property;
-    }
-
-    // Level-only fallback: bias to property payload events while preserving Unknown for unclassified names.
-    if (EventTypeLevel >= 2 || ContentLevel >= 2)
-    {
-        return EObjectNetEventKind::Property;
-    }
-
-    return EObjectNetEventKind::Unknown;
 }
 
 static uint32 MakePacketId(const uint32 PacketSequence, const uint32 PacketIndex)
@@ -340,7 +286,7 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                             }
 
                                             const uint16 EventLevel = EventTypeInfo != nullptr ? EventTypeInfo->Level : 0;
-                                            const EObjectNetEventKind Kind = GuessEventKind(EventName, EventLevel, static_cast<uint8>(ContentEvent.Level));
+                                            const EObjectNetEventKind Kind = FObjectNetEventClassifier::InferKind(EventName, EventLevel, static_cast<uint8>(ContentEvent.Level));
 
                                             FObjectNetEvent Event;
                                             Event.TimeSec = PacketTimeSec;

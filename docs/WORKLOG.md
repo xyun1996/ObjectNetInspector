@@ -26,7 +26,7 @@
   - `FObjectNetInsightsBridge` 已接入 active session API
   - 已实现 UE5.7 兼容 NetProfiler -> `FObjectNetEvent` 映射（`EnumeratePackets + EnumeratePacketContentEventsByIndex`）
   - 已实现增强归因：`Kind` 多规则识别 + `Unknown` 回退，并输出 `TypeId` 作为 `ClassName` 回退值
-- 已新增最小自动化验证样例：`ObjectNetInspector.Provider.FilteringAndAggregation`
+- 已新增最小自动化验证样例：`ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Classifier.KindInference`
 - 该自动化样例已在 UE5.7 编辑器中执行成功（Success）
 - 已提供脚本化测试入口：`scripts/Run-ObjectNetTests.ps1` + `docs/TESTING.md`
 - 工具栏已显示数据源状态：`Session/Mock` + 当前事件总数
@@ -53,14 +53,14 @@
   - `Source/ObjectNetInspector/Private/Tests/ObjectNetProviderTests.cpp`
 
 ## 5. 下一步任务
-1. 继续提升 `FObjectNetInsightsBridge` 的 `Kind` 归因准确率（减少 `Unknown` 与误判）
+1. 基于分类器与回归测试继续提升 `Kind` 归因准确率（减少 `Unknown` 与误判）
 2. 若 UE API 可提供，补充对象真实 `ClassName/ObjectPath`（替代 `TypeId` 回退）
 3. 在 UE5.7 已挂载到 Workspace Profiling 分类，后续补跨版本验证
 
 ## 6. 今天新增进展（2026-03-10）
 - 解决 UE5.7 编译兼容问题（UI OnSort 签名、头文件路径、桥接 API 适配）。
 - 在 UE5.7 下恢复真实事件映射链路（不再仅 session 元信息）。
-- 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation` 运行结果：Success。
+- 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Classifier.KindInference` 运行结果：Success。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
