@@ -70,4 +70,4 @@
 
 ## 9. 文本编辑规则
 - 为避免 CRLF/LF 混乱和误写入 `` `r`n `` 字面量，请遵循：
-  - [TEXT_HYGIENE_RULES.md](/G:/workspace/ai/ObjectNetInspector/docs/TEXT_HYGIENE_RULES.md)
+  - [docs/TEXT_HYGIENE_RULES.md](docs/TEXT_HYGIENE_RULES.md)
