@@ -52,15 +52,18 @@ bool FObjectNetProviderFilteringAndAggregationTest::RunTest(const FString& Param
             OutEvents.Add(MakeEvent(1.1, 1, 1001, TEXT("ObjA"), EObjectNetEventKind::Property, EObjectNetDirection::Outgoing, TEXT("HealthProperty"), 101, TOptional<uint64>()));
             OutEvents.Add(MakeEvent(1.2, 2, 2002, TEXT("ObjB"), EObjectNetEventKind::Property, EObjectNetDirection::Outgoing, TEXT("AmmoProperty"), 202, 64ull));
             OutEvents.Add(MakeEvent(1.3, 2, 2002, TEXT("ObjB"), EObjectNetEventKind::Unknown, EObjectNetDirection::Outgoing, TEXT("CustomPayload"), 203, TOptional<uint64>()));
+            OutEvents.Add(MakeEvent(1.4, 2, 2002, TEXT("ObjB"), EObjectNetEventKind::PacketRef, EObjectNetDirection::Outgoing, TEXT("ChannelBunchPacket"), 204, TOptional<uint64>()));
             return true;
         });
 
     Provider.Refresh();
 
     TestEqual(TEXT("Session reader data source should be Session"), static_cast<uint8>(Provider.GetLastDataSourceKind()), static_cast<uint8>(EObjectNetDataSourceKind::Session));
-    TestEqual(TEXT("Session reader event count"), Provider.GetLastEventCount(), 4);
+    TestEqual(TEXT("Session reader event count"), Provider.GetLastEventCount(), 5);
     TestEqual(TEXT("Session reader unknown event count"), Provider.GetLastUnknownEventCount(), 1);
-    TestTrue(TEXT("Session reader unknown ratio should be 0.25"), FMath::IsNearlyEqual(Provider.GetLastUnknownRatio(), 0.25, KINDA_SMALL_NUMBER));
+    TestTrue(TEXT("Session reader unknown ratio should be 0.2"), FMath::IsNearlyEqual(Provider.GetLastUnknownRatio(), 0.2, KINDA_SMALL_NUMBER));
+    TestEqual(TEXT("Session reader packet-ref event count"), Provider.GetLastPacketRefEventCount(), 1);
+    TestTrue(TEXT("Session reader packet-ref ratio should be 0.2"), FMath::IsNearlyEqual(Provider.GetLastPacketRefRatio(), 0.2, KINDA_SMALL_NUMBER));
 
     FObjectNetQuery Query;
     Query.ConnectionFilter = 1u;

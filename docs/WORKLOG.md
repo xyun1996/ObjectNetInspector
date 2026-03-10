@@ -106,6 +106,9 @@
 - 分类器补充属性同步信号词：`ChangeMask/BaseState/Dirty`，提升 Iris/复制状态类命名下的归因覆盖。
 - 新增回归用例：`ChannelBunchPacket`、`NetPacketAck`（期望 `PacketRef`）以及 `ReplicatedPropertyPacket`（验证属性信号优先于包级弱信号）。
 - 自动化测试再次执行（2026-03-10 20:44 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
+- Provider/Toolbar 质量指标扩展：新增 `PacketRef` 事件计数与占比（`PacketRef%`），便于和 `Unknown%` 一起追踪归因演进。
+- `ObjectNetInspector.Provider.FilteringAndAggregation` 新增 `PacketRef` 样本与断言（事件数、`PacketRefCount`、`PacketRefRatio`）。
+- 自动化测试再次执行（2026-03-10 20:47 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

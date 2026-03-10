@@ -178,11 +178,13 @@ private:
     FText GetDataSourceText() const
     {
         const double UnknownPct = Provider->GetLastUnknownRatio() * 100.0;
+        const double PacketRefPct = Provider->GetLastPacketRefRatio() * 100.0;
         return FText::FromString(FString::Printf(
-            TEXT("Source: %s (%d events, Unknown %.1f%%)"),
+            TEXT("Source: %s (%d events, Unknown %.1f%%, PacketRef %.1f%%)"),
             *Provider->GetLastDataSourceLabel(),
             Provider->GetLastEventCount(),
-            UnknownPct));
+            UnknownPct,
+            PacketRefPct));
     }
 
     FSlateColor GetDataSourceColor() const

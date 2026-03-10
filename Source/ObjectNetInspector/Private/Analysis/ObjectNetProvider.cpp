@@ -4,6 +4,7 @@ FObjectNetProvider::FObjectNetProvider()
     : LastDataSourceKind(EObjectNetDataSourceKind::Unknown)
     , LastEventCount(0)
     , LastUnknownEventCount(0)
+    , LastPacketRefEventCount(0)
 {
 }
 
@@ -23,11 +24,16 @@ void FObjectNetProvider::Refresh()
     Analyzer.Rebuild(TraceReader.GetEvents());
     LastEventCount = Analyzer.GetEvents().Num();
     LastUnknownEventCount = 0;
+    LastPacketRefEventCount = 0;
     for (const FObjectNetEvent& Event : Analyzer.GetEvents())
     {
         if (Event.Kind == EObjectNetEventKind::Unknown)
         {
             ++LastUnknownEventCount;
+        }
+        else if (Event.Kind == EObjectNetEventKind::PacketRef)
+        {
+            ++LastPacketRefEventCount;
         }
     }
     CurrentAggregates = Aggregator.BuildAggregates(Analyzer, CurrentQuery);
@@ -149,6 +155,21 @@ double FObjectNetProvider::GetLastUnknownRatio() const
     }
 
     return static_cast<double>(LastUnknownEventCount) / static_cast<double>(LastEventCount);
+}
+
+int32 FObjectNetProvider::GetLastPacketRefEventCount() const
+{
+    return LastPacketRefEventCount;
+}
+
+double FObjectNetProvider::GetLastPacketRefRatio() const
+{
+    if (LastEventCount <= 0)
+    {
+        return 0.0;
+    }
+
+    return static_cast<double>(LastPacketRefEventCount) / static_cast<double>(LastEventCount);
 }
 
 FObjectNetTraceReader& FObjectNetProvider::GetReader()

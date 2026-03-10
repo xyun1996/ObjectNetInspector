@@ -36,6 +36,8 @@ public:
     int32 GetLastEventCount() const;
     int32 GetLastUnknownEventCount() const;
     double GetLastUnknownRatio() const;
+    int32 GetLastPacketRefEventCount() const;
+    double GetLastPacketRefRatio() const;
 
     FObjectNetTraceReader& GetReader();
     const FObjectNetTraceReader& GetReader() const;
@@ -51,4 +53,5 @@ private:
     EObjectNetDataSourceKind LastDataSourceKind;
     int32 LastEventCount;
     int32 LastUnknownEventCount;
+    int32 LastPacketRefEventCount;
 };

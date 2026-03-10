@@ -13,7 +13,7 @@
 - 支持 ConnectionId 过滤
 - 支持时间窗过滤
 - 支持 RPC / Property 开关及 Outgoing Only 过滤
-- 工具栏显示数据源状态（Session / Mock）和当前事件总数
+- 工具栏显示数据源状态（Session / Mock）、当前事件总数、`Unknown%` 与 `PacketRef%`
 - 无真实 Trace 接入时自动回落到 `LoadMockDataForTesting()`
 
 ## 3. 非目标
