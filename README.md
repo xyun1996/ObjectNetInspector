@@ -42,7 +42,7 @@
 
 ## 5. 当前实现结构
 - `FObjectNetTraceReader`：统一读取入口，支持可注入 SessionReader 与 mock 回落
-- `FObjectNetInsightsBridge`：真实 Insights/Networking 会话读取适配层边界（当前安全 stub）
+- `FObjectNetInsightsBridge`：UE5.7 兼容的 Insights/NetProfiler 会话读取与事件映射适配边界
 - `FObjectNetAnalyzer`：按对象/连接/包建立索引
 - `FObjectNetAggregator`：生成对象聚合并排序
 - `FObjectNetProvider`：管理 Query、选中对象、刷新和数据源状态
@@ -63,8 +63,7 @@
 - Iris 专项适配（协议事件归因与字段映射）
 
 ## 8. TODO（明确下一步）
-- 在 `ObjectNetInsightsBridge` 中接入已验证的 active session API
-- 从网络分析 provider 提取 RPC/Property 事件并映射为 `FObjectNetEvent`
-- 完成 Tab 在 Insights Workspace 菜单中的挂载（当前为 Nomad Tab）
-- 将 UI 局部类迁移到独立头文件并整理 include
-- 增加自动化用例：Query 过滤、聚合正确性、无 BitCount 行为
+- 继续提升 `FObjectNetInsightsBridge` 的事件类型归因准确率（减少 Unknown/误判）
+- 若 UE API 可提供，补充对象真实 `ClassName/ObjectPath` 映射
+- 视 UE 版本细化 Tab 在 Insights Workspace 菜单中的挂载
+- 增加更多自动化用例（归因分类稳定性、真实会话映射回归）
