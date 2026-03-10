@@ -34,6 +34,16 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::Property));
 
     TestEqual(
+        TEXT("RepLayout signal should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("RepLayoutPushModelState"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
+        TEXT("Remote function signal should map to Rpc"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("CallRemoteFunction"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Rpc));
+
+    TestEqual(
         TEXT("No keyword but high level should map to Property"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("CustomPayload"), 2, 0)),
         static_cast<uint8>(EObjectNetEventKind::Property));

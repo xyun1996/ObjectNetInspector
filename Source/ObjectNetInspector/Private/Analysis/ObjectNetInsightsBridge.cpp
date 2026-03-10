@@ -3,6 +3,7 @@
 #include "Insights/IUnrealInsightsModule.h"
 #include "Modules/ModuleManager.h"
 #include "ObjectNetEventClassifier.h"
+#include "ObjectNetMetadataParser.h"
 #include "ObjectNetTypes.h"
 #include "TraceServices/Model/AnalysisSession.h"
 #include "TraceServices/Model/NetProfiler.h"
@@ -54,37 +55,6 @@ static uint32 MakePacketId(const uint32 PacketSequence, const uint32 PacketIndex
     return static_cast<uint32>(Candidate);
 }
 
-static void ResolveObjectDisplayNameAndPath(const FString& RawObjectName, FString& OutObjectName, FString& OutObjectPath)
-{
-    OutObjectName = RawObjectName;
-    OutObjectPath.Empty();
-
-    if (RawObjectName.IsEmpty())
-    {
-        return;
-    }
-
-    const bool bLooksLikePath = RawObjectName.Contains(TEXT("/"), ESearchCase::CaseSensitive) || RawObjectName.Contains(TEXT(":"), ESearchCase::CaseSensitive);
-    if (!bLooksLikePath)
-    {
-        return;
-    }
-
-    OutObjectPath = RawObjectName;
-
-    int32 LastDot = INDEX_NONE;
-    int32 LastColon = INDEX_NONE;
-    int32 LastSlash = INDEX_NONE;
-    RawObjectName.FindLastChar(TEXT('.'), LastDot);
-    RawObjectName.FindLastChar(TEXT(':'), LastColon);
-    RawObjectName.FindLastChar(TEXT('/'), LastSlash);
-
-    int32 SplitIndex = FMath::Max(LastDot, FMath::Max(LastColon, LastSlash));
-    if (SplitIndex != INDEX_NONE && SplitIndex + 1 < RawObjectName.Len())
-    {
-        OutObjectName = RawObjectName.Mid(SplitIndex + 1);
-    }
-}
 } // namespace
 
 bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& OutEvents)
@@ -340,12 +310,17 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                             Event.ObjectId = ObjectInfo->NetObjectId != 0ull
                                                 ? ObjectInfo->NetObjectId
                                                 : MakeObjectCacheKey(GameInstanceIndex, ContentEvent.ObjectInstanceIndex);
-                                            ResolveObjectDisplayNameAndPath(RawObjectName, Event.ObjectName, Event.ObjectPath);
-                                            Event.ClassName = !ObjectInfo->TypeName.IsEmpty()
-                                                ? ObjectInfo->TypeName
-                                                : (ObjectInfo->TypeId != 0ull
+                                            FObjectNetMetadataParser::ParseObjectNameAndPath(RawObjectName, Event.ObjectName, Event.ObjectPath);
+                                            if (!ObjectInfo->TypeName.IsEmpty())
+                                            {
+                                                Event.ClassName = ObjectInfo->TypeName;
+                                            }
+                                            else if (!FObjectNetMetadataParser::TryInferClassName(RawObjectName, Event.ClassName))
+                                            {
+                                                Event.ClassName = ObjectInfo->TypeId != 0ull
                                                     ? FString::Printf(TEXT("TypeId_0x%llX"), ObjectInfo->TypeId)
-                                                    : FString());
+                                                    : FString();
+                                            }
                                             Event.Kind = Kind;
                                             Event.Direction = ToDirection(Mode);
                                             Event.EventName = MoveTemp(EventName);

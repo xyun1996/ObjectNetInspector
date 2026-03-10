@@ -31,6 +31,9 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
     {
         { TEXT("rpc"), 4 },
         { TEXT("function"), 3 },
+        { TEXT("remotefunction"), 3 },
+        { TEXT("callremote"), 2 },
+        { TEXT("sendrpc"), 3 },
         { TEXT("netmulticast"), 4 },
         { TEXT("multicast"), 3 },
         { TEXT("remote"), 1 }
@@ -39,9 +42,13 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
     static const FWeightedTerm PropertyTerms[] =
     {
         { TEXT("property"), 4 },
+        { TEXT("replayout"), 3 },
+        { TEXT("repstate"), 3 },
         { TEXT("replicated"), 3 },
         { TEXT("repnotify"), 3 },
         { TEXT("rep"), 2 },
+        { TEXT("pushmodel"), 3 },
+        { TEXT("changelist"), 2 },
         { TEXT("state"), 2 },
         { TEXT("delta"), 2 },
         { TEXT("array"), 2 },

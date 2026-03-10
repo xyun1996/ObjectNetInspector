@@ -30,7 +30,7 @@
 - 字段映射：
   - `ObjectId`：优先 `NetObjectId`，缺失回退为 `GameInstanceIndex:ObjectIndex` 组合键
   - `ObjectName`：优先 name 表，缺失回退 `Object_<index>`
-  - `ClassName`：当前回退为 `TypeId_0x...`（等待真实类名 API）
+  - `ClassName`：优先对象 `TypeName`；缺失时尝试从对象名推断（如 `BP_PlayerCharacter_C_0 -> BP_PlayerCharacter_C`）；仍失败再回退 `TypeId_0x...`
   - `TimeSec`：`Packet.TimeStamp`
   - `ConnectionId`：`Connection.ConnectionId`
   - `PacketId`：`SequenceNumber + 1`（避免 0）
@@ -39,15 +39,17 @@
 ## 5. Kind 归因策略（当前）
 - 已抽离到 `FObjectNetEventClassifier`，避免 bridge 内部硬编码导致不可测。
 - 分类规则：
-  - RPC 关键词：`rpc/function/netmulticast/server/client`
-  - Property 关键词：`property/prop/rep/state/delta/array/serializer`
+  - RPC 关键词：`rpc/function/remotefunction/callremote/sendrpc/netmulticast`
+  - Property 关键词：`property/replayout/repstate/rep/pushmodel/changelist/state/delta/array/serializer`
   - 关键词都未命中时，按 `EventTypeLevel`/`ContentLevel` 做 Property 回退
   - 仍无信号时归为 `Unknown`
 
 ## 6. 验证
+- 已新增 `FObjectNetMetadataParser`，集中处理对象名/路径拆分与类名启发式推断，并配套回归测试。
 - 自动化测试：
   - `ObjectNetInspector.Provider.FilteringAndAggregation`
   - `ObjectNetInspector.Classifier.KindInference`
+  - `ObjectNetInspector.MetadataParser.ObjectNamePath`
 - 标准执行入口：`scripts/Run-ObjectNetTests.ps1`（说明见 `docs/TESTING.md`）。
 
 ## 7. 当前剩余工作
