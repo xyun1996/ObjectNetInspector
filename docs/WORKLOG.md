@@ -55,9 +55,9 @@
 ## 5. 下一步任务
 1. 基于分类器与回归测试继续提升 `Kind` 归因准确率（减少 `Unknown` 与误判）
 2. 若 UE API 可提供，补充对象真实 `ClassName/ObjectPath`（替代 `TypeId` 回退）
-3. 在 UE5.7 已挂载到 Workspace Profiling 分类，后续补跨版本验证
+3. Tab 挂载已加编译期守卫（有 Workspace API 则挂 Profiling，否则回退 Nomad）
 
-## 6. 今天新增进展（2026-03-10）
+## 6. 今天新增进展（2026-03-10）`n- `Kind` 归因规则升级为“加权评分 + 冲突回退”，降低 server/client 字样导致的 RPC 误判，并新增边界回归用例。`n
 - 解决 UE5.7 编译兼容问题（UI OnSort 签名、头文件路径、桥接 API 适配）。
 - 在 UE5.7 下恢复真实事件映射链路（不再仅 session 元信息）。
 - 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Classifier.KindInference` 运行结果：Success。
