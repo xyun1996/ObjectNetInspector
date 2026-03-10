@@ -355,11 +355,14 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
     }
 
     const bool bNetworkingInsightsLoaded = FModuleManager::Get().IsModuleLoaded(TEXT("NetworkingInsights"));
+    const double UnknownRatio = MappedContentEventCount > 0
+        ? static_cast<double>(UnknownMappedCount) / static_cast<double>(MappedContentEventCount)
+        : 0.0;
 
     UE_LOG(
         LogObjectNetInsightsBridge,
         Log,
-        TEXT("Active session detected. Duration=%.3fs BaseUnix=%.3f NetTraceVersion=%u GameInstances=%u Connections=%u Objects=%u MappedEvents=%u (Rpc=%u Property=%u Unknown=%u) NetworkingInsightsLoaded=%s"),
+        TEXT("Active session detected. Duration=%.3fs BaseUnix=%.3f NetTraceVersion=%u GameInstances=%u Connections=%u Objects=%u MappedEvents=%u (Rpc=%u Property=%u Unknown=%u UnknownRatio=%.2f%%) NetworkingInsightsLoaded=%s"),
         DurationSec,
         BaseDateTimeUnixSec,
         NetTraceVersion,
@@ -370,7 +373,17 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
         RpcMappedCount,
         PropertyMappedCount,
         UnknownMappedCount,
+        UnknownRatio * 100.0,
         bNetworkingInsightsLoaded ? TEXT("true") : TEXT("false"));
+
+    if (MappedContentEventCount >= 50 && UnknownRatio > 0.40)
+    {
+        UE_LOG(
+            LogObjectNetInsightsBridge,
+            Warning,
+            TEXT("High Unknown ratio detected in mapped events (%.2f%%). Consider extending classifier terms for this trace set."),
+            UnknownRatio * 100.0);
+    }
 
     return true;
 }
