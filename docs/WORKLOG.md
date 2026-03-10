@@ -76,6 +76,7 @@
 - ClassName 映射增强：对 provider 的 `TypeName` 先做规范化（支持 `Class'/Script/...'`、脚本路径短名提取），再进行对象名推断回退。
 - 新增文本卫生规则：补充 `.gitattributes`、`.editorconfig` 与 `docs/TEXT_HYGIENE_RULES.md`，约束编码/换行并明确提交流程检查项。
 - 元数据解析增强：`ObjectPath` 识别补充 dot-only 形式，并对输入做外层引号/空白清理，降低真实 trace 名称格式差异导致的映射波动。
+- bridge 日志补充 `ClassName` 来源统计（TypeName / Inferred / TypeIdFallback），用于跟踪映射质量迭代效果。
 - 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Provider.SearchFields`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
 
 ## 7. 文档约定

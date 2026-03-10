@@ -40,7 +40,7 @@
   - `ConnectionId`：`Connection.ConnectionId`
   - `PacketId`：`SequenceNumber + 1`（避免 0）
   - `BitCount`：`EndPos - StartPos`（仅 End>Start）
-  - 观测指标：bridge 日志输出 `UnknownRatio`；当映射事件数较大且 `Unknown` 占比过高时输出告警，辅助分类器迭代。
+  - 观测指标：bridge 日志输出 `UnknownRatio` 与 `ClassName` 来源分布（TypeName / Inferred / TypeIdFallback）；当映射事件数较大且 `Unknown` 占比过高时输出告警，辅助分类器迭代。
 
 ## 5. Kind 归因策略（当前）
 - 已抽离到 `FObjectNetEventClassifier`，避免 bridge 内部硬编码导致不可测。

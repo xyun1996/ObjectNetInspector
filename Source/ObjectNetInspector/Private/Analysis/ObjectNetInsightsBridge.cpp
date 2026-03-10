@@ -90,6 +90,9 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
     uint32 RpcMappedCount = 0;
     uint32 PropertyMappedCount = 0;
     uint32 UnknownMappedCount = 0;
+    uint32 ClassFromTypeNameCount = 0;
+    uint32 ClassFromInferredNameCount = 0;
+    uint32 ClassFromTypeIdFallbackCount = 0;
 
     {
         TraceServices::FAnalysisSessionReadScope SessionReadScope(*AnalysisSession);
@@ -191,6 +194,9 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                         &RpcMappedCount,
                         &PropertyMappedCount,
                         &UnknownMappedCount,
+                        &ClassFromTypeNameCount,
+                        &ClassFromInferredNameCount,
+                        &ClassFromTypeIdFallbackCount,
                         &NameByIndex,
                         &EventTypeByIndex,
                         &ObjectByKey,
@@ -234,6 +240,9 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                     &RpcMappedCount,
                                     &PropertyMappedCount,
                                     &UnknownMappedCount,
+                                    &ClassFromTypeNameCount,
+                                    &ClassFromInferredNameCount,
+                                    &ClassFromTypeIdFallbackCount,
                                     &NameByIndex,
                                     &EventTypeByIndex,
                                     &ObjectByKey,
@@ -265,6 +274,9 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                             &RpcMappedCount,
                                             &PropertyMappedCount,
                                             &UnknownMappedCount,
+                                            &ClassFromTypeNameCount,
+                                            &ClassFromInferredNameCount,
+                                            &ClassFromTypeIdFallbackCount,
                                             &NameByIndex,
                                             &EventTypeByIndex,
                                             &ObjectByKey,
@@ -314,12 +326,27 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                             if (!ObjectInfo->TypeName.IsEmpty())
                                             {
                                                 Event.ClassName = FObjectNetMetadataParser::NormalizeClassName(ObjectInfo->TypeName);
+                                                if (!Event.ClassName.IsEmpty())
+                                                {
+                                                    ++ClassFromTypeNameCount;
+                                                }
                                             }
-                                            if (Event.ClassName.IsEmpty() && !FObjectNetMetadataParser::TryInferClassName(RawObjectName, Event.ClassName))
+                                            if (Event.ClassName.IsEmpty())
                                             {
-                                                Event.ClassName = ObjectInfo->TypeId != 0ull
-                                                    ? FString::Printf(TEXT("TypeId_0x%llX"), ObjectInfo->TypeId)
-                                                    : FString();
+                                                if (FObjectNetMetadataParser::TryInferClassName(RawObjectName, Event.ClassName))
+                                                {
+                                                    ++ClassFromInferredNameCount;
+                                                }
+                                                else
+                                                {
+                                                    Event.ClassName = ObjectInfo->TypeId != 0ull
+                                                        ? FString::Printf(TEXT("TypeId_0x%llX"), ObjectInfo->TypeId)
+                                                        : FString();
+                                                    if (!Event.ClassName.IsEmpty())
+                                                    {
+                                                        ++ClassFromTypeIdFallbackCount;
+                                                    }
+                                                }
                                             }
                                             Event.Kind = Kind;
                                             Event.Direction = ToDirection(Mode);
@@ -362,7 +389,7 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
     UE_LOG(
         LogObjectNetInsightsBridge,
         Log,
-        TEXT("Active session detected. Duration=%.3fs BaseUnix=%.3f NetTraceVersion=%u GameInstances=%u Connections=%u Objects=%u MappedEvents=%u (Rpc=%u Property=%u Unknown=%u UnknownRatio=%.2f%%) NetworkingInsightsLoaded=%s"),
+        TEXT("Active session detected. Duration=%.3fs BaseUnix=%.3f NetTraceVersion=%u GameInstances=%u Connections=%u Objects=%u MappedEvents=%u (Rpc=%u Property=%u Unknown=%u UnknownRatio=%.2f%%) ClassSource(TypeName=%u Inferred=%u TypeIdFallback=%u) NetworkingInsightsLoaded=%s"),
         DurationSec,
         BaseDateTimeUnixSec,
         NetTraceVersion,
@@ -374,6 +401,9 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
         PropertyMappedCount,
         UnknownMappedCount,
         UnknownRatio * 100.0,
+        ClassFromTypeNameCount,
+        ClassFromInferredNameCount,
+        ClassFromTypeIdFallbackCount,
         bNetworkingInsightsLoaded ? TEXT("true") : TEXT("false"));
 
     if (MappedContentEventCount >= 50 && UnknownRatio > 0.40)
