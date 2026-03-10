@@ -26,7 +26,7 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "E:\eworkspace\Lyra"
 
 可选参数：
 - `-EngineRoot`：指定引擎目录（不传时自动探测）
-- `-SkipBuild`：跳过构建直接跑测试
+- `-SkipBuild`：跳过构建直接跑测试（要求目标工程已存在可加载的插件二进制）
 - `-TestName`：跑单个测试
 - `-TestNames`：跑多个指定测试
 - `-ReportOutputPath`：自定义报告目录
@@ -43,6 +43,13 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
 满足以下两项即视为通过：
 - 日志包含：`Test Completed. Result={Success}`
 - 脚本退出码为 `0`
+
+脚本已内置报告校验：
+- 读取 `Saved/AutomationReports/index.json`
+- 要求 `failed == 0`
+- 要求至少有一个成功（`succeeded > 0` 或 `succeededWithWarnings > 0`）
+
+脚本还会在每次运行前清空报告目录，避免读到历史结果。
 
 ## 5. 编辑器内跑法（备选）
 - 打开编辑器

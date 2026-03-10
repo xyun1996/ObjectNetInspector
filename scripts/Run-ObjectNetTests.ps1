@@ -86,7 +86,7 @@ Write-Host "Destination: $destinationPluginRoot"
 
 New-Item -ItemType Directory -Path $destinationPluginsDir -Force | Out-Null
 
-if (Test-Path $destinationPluginRoot) {
+if ((Test-Path $destinationPluginRoot) -and (-not $SkipBuild)) {
     Remove-Item -LiteralPath $destinationPluginRoot -Recurse -Force
 }
 
@@ -109,6 +109,11 @@ if (-not $SkipBuild) {
 if ([string]::IsNullOrWhiteSpace($ReportOutputPath)) {
     $ReportOutputPath = Join-Path $projectDir "Saved\AutomationReports"
 }
+
+if (Test-Path $ReportOutputPath) {
+    Remove-Item -LiteralPath $ReportOutputPath -Recurse -Force
+}
+New-Item -ItemType Directory -Path $ReportOutputPath -Force | Out-Null
 
 $ResolvedTests = @()
 if ($TestNames.Count -gt 0) {
@@ -137,4 +142,34 @@ Write-Host "Report: $ReportOutputPath"
     -log `
     -ReportOutputPath="$ReportOutputPath"
 
-exit $LASTEXITCODE
+$editorExitCode = $LASTEXITCODE
+if ($editorExitCode -ne 0) {
+    throw "UnrealEditor-Cmd exited with code $editorExitCode."
+}
+
+$reportIndexPath = Join-Path $ReportOutputPath "index.json"
+if (-not (Test-Path $reportIndexPath)) {
+    throw "Automation report not found: $reportIndexPath"
+}
+
+$report = Get-Content -LiteralPath $reportIndexPath -Raw | ConvertFrom-Json
+if ($null -eq $report) {
+    throw "Failed to parse automation report: $reportIndexPath"
+}
+
+$failed = [int]$report.failed
+$succeeded = [int]$report.succeeded
+$warnings = [int]$report.succeededWithWarnings
+$notRun = [int]$report.notRun
+
+Write-Host "Automation summary: succeeded=$succeeded warnings=$warnings failed=$failed notRun=$notRun"
+
+if ($failed -gt 0) {
+    throw "Automation tests reported failures (failed=$failed)."
+}
+
+if ($succeeded -le 0 -and $warnings -le 0) {
+    throw "No successful automation tests were recorded."
+}
+
+exit 0

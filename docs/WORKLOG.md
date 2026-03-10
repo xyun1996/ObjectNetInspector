@@ -86,6 +86,11 @@
 - bridge 事件归因输入增强：分类时组合 `EventTypeName + ContentName`，显示名与分类文本解耦，降低因单字段缺失/泛化命名导致的 `Unknown`。
 - 元数据解析回归补充：`TRASHCLASS_` 前缀规范化新增自动化覆盖。
 - 自动化测试再次执行（2026-03-10 20:21 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
+- 测试脚本增强：新增报告强校验（解析 `index.json`，要求 `failed==0` 且存在成功项），并在每次运行前清空报告目录，防止历史结果污染。
+- 修复 `SkipBuild` 流程：跳过构建时不再删除目标插件目录，保留已有 `Binaries/Intermediate`，支持快速单测回归。
+- 脚本验证结果（2026-03-10 20:28 CST）：
+  - 全量：`pwsh -File .\scripts\Run-ObjectNetTests.ps1` -> Success（4/4）
+  - 单测：`pwsh -File .\scripts\Run-ObjectNetTests.ps1 -SkipBuild -TestName "ObjectNetInspector.Classifier.KindInference"` -> Success（1/1）
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
