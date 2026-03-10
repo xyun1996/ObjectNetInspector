@@ -102,6 +102,10 @@
 - 单测验证（2026-03-10 20:39 CST）：`ObjectNetInspector.Provider.FilteringAndAggregation` Success（1/1）。
 - bridge 诊断日志增强：`ClassName` 来源统计细分为 `TypeName / ObjectName / EventScope / TypeIdFallback`，便于定向评估哪条回退链路贡献最大。
 - 自动化测试再次执行（2026-03-10 20:38 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
+- `Kind` 归因新增 `PacketRef` 识别（`packet/bunch/ack/controlchannel` 等），用于将包级上下文事件从 `Unknown` 中分离，辅助 `Unknown%` 持续下降。
+- 分类器补充属性同步信号词：`ChangeMask/BaseState/Dirty`，提升 Iris/复制状态类命名下的归因覆盖。
+- 新增回归用例：`ChannelBunchPacket`、`NetPacketAck`（期望 `PacketRef`）以及 `ReplicatedPropertyPacket`（验证属性信号优先于包级弱信号）。
+- 自动化测试再次执行（2026-03-10 20:44 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

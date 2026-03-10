@@ -76,6 +76,8 @@
 - 将 `function` 从强信号降为弱信号，降低“包含 function 但并非网络 RPC”的误判概率。
 - 新增编辑器语境抑制：`FunctionGraph/FunctionTable/CompileFunction/FunctionLibrary` 命中时下调 RPC 分，避免工具链/编辑器事件误判为 RPC。
 - 保持“冲突回退 Unknown”策略不变，优先避免错判而不是过度归类。
+- 新增 `PacketRef` 分类通道：当 `packet/bunch/ack/controlchannel` 等包级信号足够强，且 RPC/Property 信号不足时，归为 `PacketRef` 而不是 `Unknown`。
+- 属性同步词典补充 `ChangeMask/BaseState/Dirty`，提升复制状态命名下的命中率。
 
 补充（同日）：
 - bridge 在分类阶段不再只依赖单一名称字段：会组合 `EventTypeName + ContentName` 作为分类输入，提升命中率；UI 显示名保持可读优先（优先非泛化 EventTypeName，其次 ContentName）。

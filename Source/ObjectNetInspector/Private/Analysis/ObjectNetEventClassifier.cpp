@@ -70,11 +70,27 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("array"), 2 },
         { TEXT("fastarray"), 3 },
         { TEXT("serializer"), 2 },
-        { TEXT("quantized"), 1 }
+        { TEXT("quantized"), 1 },
+        { TEXT("changemask"), 2 },
+        { TEXT("basestate"), 2 },
+        { TEXT("dirty"), 1 }
+    };
+
+    static const FWeightedTerm PacketTerms[] =
+    {
+        { TEXT("packet"), 3 },
+        { TEXT("bunch"), 3 },
+        { TEXT("ack"), 2 },
+        { TEXT("nack"), 2 },
+        { TEXT("header"), 1 },
+        { TEXT("controlchannel"), 3 },
+        { TEXT("channelbunch"), 3 },
+        { TEXT("netpacket"), 3 }
     };
 
     int32 RpcScore = ComputeScore(EventName, RpcTerms, UE_ARRAY_COUNT(RpcTerms));
     const int32 PropertyScore = ComputeScore(EventName, PropertyTerms, UE_ARRAY_COUNT(PropertyTerms));
+    const int32 PacketScore = ComputeScore(EventName, PacketTerms, UE_ARRAY_COUNT(PacketTerms));
     const bool bHasRepLike = EventName.Contains(TEXT("rep"), SearchCase);
     const bool bHasRpcLike = EventName.Contains(TEXT("rpc"), SearchCase) || EventName.Contains(TEXT("function"), SearchCase);
     const bool bLooksLikeEditorFunctionContext =
@@ -95,6 +111,12 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         return EObjectNetEventKind::Unknown;
     }
 
+    // Packet-level labels are useful for traffic context, but only when RPC/Property signals are weak.
+    if (PacketScore >= 3 && RpcScore < 2 && PropertyScore < 2)
+    {
+        return EObjectNetEventKind::PacketRef;
+    }
+
     if (RpcScore > 0 && PropertyScore > 0)
     {
         const int32 Diff = FMath::Abs(RpcScore - PropertyScore);
@@ -109,6 +131,11 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         }
 
         return EObjectNetEventKind::Unknown;
+    }
+
+    if (PacketScore >= 3 && RpcScore == 0 && PropertyScore == 0)
+    {
+        return EObjectNetEventKind::PacketRef;
     }
 
     if (RpcScore >= 2)

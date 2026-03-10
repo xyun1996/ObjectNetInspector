@@ -94,6 +94,21 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::Property));
 
     TestEqual(
+        TEXT("Packet-level bunch should map to PacketRef"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ChannelBunchPacket"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::PacketRef));
+
+    TestEqual(
+        TEXT("Ack packet update should map to PacketRef"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("NetPacketAck"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::PacketRef));
+
+    TestEqual(
+        TEXT("Property signal should win over packet hint"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ReplicatedPropertyPacket"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
         TEXT("Ambiguous rpc+rep mix should stay Unknown"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ServerRepFunction"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Unknown));
