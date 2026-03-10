@@ -35,6 +35,30 @@ bool FObjectNetMetadataParserTest::RunTest(const FString& Parameters)
     }
 
     {
+        FString ObjectName;
+        FString ObjectPath;
+        FObjectNetMetadataParser::ParseObjectNameAndPath(
+            TEXT("BP_Weapon.BP_Weapon_C_1"),
+            ObjectName,
+            ObjectPath);
+
+        TestEqual(TEXT("Dot-only path should extract short object name"), ObjectName, FString(TEXT("BP_Weapon_C_1")));
+        TestEqual(TEXT("Dot-only path should preserve full object path"), ObjectPath, FString(TEXT("BP_Weapon.BP_Weapon_C_1")));
+    }
+
+    {
+        FString ObjectName;
+        FString ObjectPath;
+        FObjectNetMetadataParser::ParseObjectNameAndPath(
+            TEXT("  '/Game/Maps/Arena.Arena:PersistentLevel.BP_Pawn_C_2'  "),
+            ObjectName,
+            ObjectPath);
+
+        TestEqual(TEXT("Quoted path should extract short object name"), ObjectName, FString(TEXT("BP_Pawn_C_2")));
+        TestEqual(TEXT("Quoted path should be sanitized and preserved"), ObjectPath, FString(TEXT("/Game/Maps/Arena.Arena:PersistentLevel.BP_Pawn_C_2")));
+    }
+
+    {
         FString ClassName;
         const bool bInferred = FObjectNetMetadataParser::TryInferClassName(
             TEXT("/Game/Maps/Arena.Arena:PersistentLevel.BP_PlayerCharacter_C_0"),

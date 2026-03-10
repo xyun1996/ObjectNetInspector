@@ -47,28 +47,56 @@ static FString ExtractLeafToken(const FString& RawValue)
 
     return RawValue;
 }
+
+static FString StripOuterQuotes(const FString& RawValue)
+{
+    FString Value = RawValue;
+    Value.TrimStartAndEndInline();
+    if (Value.Len() >= 2)
+    {
+        const TCHAR First = Value[0];
+        const TCHAR Last = Value[Value.Len() - 1];
+        const bool bSingleQuoted = (First == TEXT('\'')) && (Last == TEXT('\''));
+        const bool bDoubleQuoted = (First == TEXT('"')) && (Last == TEXT('"'));
+        if (bSingleQuoted || bDoubleQuoted)
+        {
+            Value = Value.Mid(1, Value.Len() - 2);
+        }
+    }
+
+    return Value;
+}
+
+static bool LooksLikeObjectPath(const FString& RawValue)
+{
+    return RawValue.Contains(TEXT("/"), ESearchCase::CaseSensitive) ||
+        RawValue.Contains(TEXT(":"), ESearchCase::CaseSensitive) ||
+        (RawValue.Contains(TEXT("."), ESearchCase::CaseSensitive) &&
+            (RawValue.Contains(TEXT("_C"), ESearchCase::CaseSensitive) ||
+                RawValue.Contains(TEXT("PersistentLevel"), ESearchCase::CaseSensitive)));
+}
 } // namespace
 
 void FObjectNetMetadataParser::ParseObjectNameAndPath(const FString& RawObjectName, FString& OutObjectName, FString& OutObjectPath)
 {
-    OutObjectName = RawObjectName;
+    const FString SanitizedName = StripOuterQuotes(RawObjectName);
+
+    OutObjectName = SanitizedName;
     OutObjectPath.Empty();
 
-    if (RawObjectName.IsEmpty())
+    if (SanitizedName.IsEmpty())
     {
         return;
     }
 
-    const bool bLooksLikePath =
-        RawObjectName.Contains(TEXT("/"), ESearchCase::CaseSensitive) ||
-        RawObjectName.Contains(TEXT(":"), ESearchCase::CaseSensitive);
+    const bool bLooksLikePath = LooksLikeObjectPath(SanitizedName);
     if (!bLooksLikePath)
     {
         return;
     }
 
-    OutObjectPath = RawObjectName;
-    OutObjectName = ExtractLeafToken(RawObjectName);
+    OutObjectPath = SanitizedName;
+    OutObjectName = ExtractLeafToken(SanitizedName);
 }
 
 bool FObjectNetMetadataParser::TryInferClassName(const FString& RawObjectName, FString& OutClassName)
