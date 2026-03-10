@@ -87,3 +87,25 @@ E:\eworkspace\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
 - 打开 `Object Net Inspector` 面板后点击 `Refresh`；
 - 若读取到 active session，顶部状态应为 `Source: Session`；
 - 否则会回落 `Source: Mock`（这代表会话读取链路未命中，而不是面板不可用）。
+
+## 7. 一键启动脚本
+新增脚本：`scripts/Launch-UnrealInsights.ps1`
+
+默认行为：
+- 自动解析 `ProjectPath`
+- 自动探测引擎目录
+- 默认同步插件到项目 `Plugins/ObjectNetInspector`
+- 未指定 `-TraceFile` 时自动选择 `Saved/Profiling` 下最新 `.utrace`
+
+示例：
+
+```powershell
+pwsh -File .\scripts\Launch-UnrealInsights.ps1
+```
+
+常用参数：
+- `-BuildInsights:$true`：启动前先编译 `UnrealInsights`
+- `-SyncPlugin:$false`：跳过插件同步
+- `-TraceFile "E:\path\to\sample.utrace"`：指定 trace 文件
+- `-AutoQuit`：打开并自动退出（适合脚本验证）
+- `-DisableOtherPlugins`：仅启用 ObjectNetInspector（排查插件冲突）
