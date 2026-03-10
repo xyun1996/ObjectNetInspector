@@ -105,6 +105,12 @@ if (-not $SkipBuild) {
         throw "Build failed for target '$EditorTarget' (exit code $LASTEXITCODE)."
     }
 }
+else {
+    $pluginDllPath = Join-Path $destinationPluginRoot "Binaries\\Win64\\UnrealEditor-ObjectNetInspector.dll"
+    if (-not (Test-Path $pluginDllPath)) {
+        throw "SkipBuild was requested but plugin binary is missing: $pluginDllPath. Run once without -SkipBuild first."
+    }
+}
 
 if ([string]::IsNullOrWhiteSpace($ReportOutputPath)) {
     $ReportOutputPath = Join-Path $projectDir "Saved\AutomationReports"

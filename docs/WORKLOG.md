@@ -98,6 +98,8 @@
 - ClassName 回退链路增强：在 `TypeName` 与对象名都不足时，新增“从事件名作用域推断类名”（如 `AbilitySystemComponent::ServerTryActivateAbility`）。
 - `ObjectNetMetadataParser` 新增 `TryInferClassNameFromEventName`，并增加对应自动化回归用例。
 - 自动化测试再次执行（2026-03-10 20:37 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
+- 脚本 `-SkipBuild` 体验增强：新增插件 DLL 预检，若二进制缺失会明确提示“先跑一次不带 `-SkipBuild` 的完整构建”。
+- 单测验证（2026-03-10 20:39 CST）：`ObjectNetInspector.Provider.FilteringAndAggregation` Success（1/1）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

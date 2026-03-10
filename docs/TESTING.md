@@ -50,6 +50,7 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
 - 要求至少有一个成功（`succeeded > 0` 或 `succeededWithWarnings > 0`）
 
 脚本还会在每次运行前清空报告目录，避免读到历史结果。
+当使用 `-SkipBuild` 时，脚本会预检 `UnrealEditor-ObjectNetInspector.dll`，缺失会直接报错提示先跑一次完整构建。
 
 ## 5. 编辑器内跑法（备选）
 - 打开编辑器
