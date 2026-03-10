@@ -67,3 +67,7 @@
 - 若 UE API 可提供，补充对象真实 `ClassName/ObjectPath` 映射
 - 视 UE 版本细化 Tab 在 Insights Workspace 菜单中的挂载
 - 增加更多自动化用例（归因分类稳定性、真实会话映射回归）
+
+## 9. 文本编辑规则
+- 为避免 CRLF/LF 混乱和误写入 `` `r`n `` 字面量，请遵循：
+  - [TEXT_HYGIENE_RULES.md](/G:/workspace/ai/ObjectNetInspector/docs/TEXT_HYGIENE_RULES.md)

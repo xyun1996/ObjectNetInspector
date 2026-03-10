@@ -74,6 +74,7 @@
 - 清理 `TraceReader` 过时 TODO，并补充会话读取/回退日志（reader 是否绑定、模块加载状态），提高诊断效率。
 - bridge 日志新增 `UnknownRatio` 输出，并在高占比场景给出告警，便于后续按 trace 样本迭代分类规则。
 - ClassName 映射增强：对 provider 的 `TypeName` 先做规范化（支持 `Class'/Script/...'`、脚本路径短名提取），再进行对象名推断回退。
+- 新增文本卫生规则：补充 `.gitattributes`、`.editorconfig` 与 `docs/TEXT_HYGIENE_RULES.md`，约束编码/换行并明确提交流程检查项。
 - 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Provider.SearchFields`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
 
 ## 7. 文档约定
