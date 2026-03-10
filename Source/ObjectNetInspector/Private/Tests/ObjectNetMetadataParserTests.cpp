@@ -52,6 +52,16 @@ bool FObjectNetMetadataParserTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Default object should strip prefix"), ClassName, FString(TEXT("BP_Weapon_C")));
     }
 
+    {
+        const FString ClassName = FObjectNetMetadataParser::NormalizeClassName(TEXT("Class'/Script/LyraGame.BP_PlayerCharacter_C'"));
+        TestEqual(TEXT("Quoted type path should normalize to short class"), ClassName, FString(TEXT("BP_PlayerCharacter_C")));
+    }
+
+    {
+        const FString ClassName = FObjectNetMetadataParser::NormalizeClassName(TEXT("/Script/Engine.Character"));
+        TestEqual(TEXT("Script type path should normalize to leaf class"), ClassName, FString(TEXT("Character")));
+    }
+
     return true;
 }
 

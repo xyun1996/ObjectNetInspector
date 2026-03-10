@@ -29,6 +29,24 @@ static bool TryExtractTrailingNumericSuffix(const FString& Value, int32& OutUnde
     OutUnderscoreIndex = LastUnderscoreIndex;
     return true;
 }
+
+static FString ExtractLeafToken(const FString& RawValue)
+{
+    int32 LastDot = INDEX_NONE;
+    int32 LastColon = INDEX_NONE;
+    int32 LastSlash = INDEX_NONE;
+    RawValue.FindLastChar(TEXT('.'), LastDot);
+    RawValue.FindLastChar(TEXT(':'), LastColon);
+    RawValue.FindLastChar(TEXT('/'), LastSlash);
+
+    const int32 SplitIndex = FMath::Max(LastDot, FMath::Max(LastColon, LastSlash));
+    if (SplitIndex != INDEX_NONE && SplitIndex + 1 < RawValue.Len())
+    {
+        return RawValue.Mid(SplitIndex + 1);
+    }
+
+    return RawValue;
+}
 } // namespace
 
 void FObjectNetMetadataParser::ParseObjectNameAndPath(const FString& RawObjectName, FString& OutObjectName, FString& OutObjectPath)
@@ -50,19 +68,7 @@ void FObjectNetMetadataParser::ParseObjectNameAndPath(const FString& RawObjectNa
     }
 
     OutObjectPath = RawObjectName;
-
-    int32 LastDot = INDEX_NONE;
-    int32 LastColon = INDEX_NONE;
-    int32 LastSlash = INDEX_NONE;
-    RawObjectName.FindLastChar(TEXT('.'), LastDot);
-    RawObjectName.FindLastChar(TEXT(':'), LastColon);
-    RawObjectName.FindLastChar(TEXT('/'), LastSlash);
-
-    const int32 SplitIndex = FMath::Max(LastDot, FMath::Max(LastColon, LastSlash));
-    if (SplitIndex != INDEX_NONE && SplitIndex + 1 < RawObjectName.Len())
-    {
-        OutObjectName = RawObjectName.Mid(SplitIndex + 1);
-    }
+    OutObjectName = ExtractLeafToken(RawObjectName);
 }
 
 bool FObjectNetMetadataParser::TryInferClassName(const FString& RawObjectName, FString& OutClassName)
@@ -96,4 +102,32 @@ bool FObjectNetMetadataParser::TryInferClassName(const FString& RawObjectName, F
 
     OutClassName = Candidate;
     return true;
+}
+
+FString FObjectNetMetadataParser::NormalizeClassName(const FString& RawClassName)
+{
+    FString Candidate = RawClassName;
+    Candidate.TrimStartAndEndInline();
+    if (Candidate.IsEmpty())
+    {
+        return FString();
+    }
+
+    int32 FirstQuoteIndex = INDEX_NONE;
+    int32 LastQuoteIndex = INDEX_NONE;
+    Candidate.FindChar(TEXT('\''), FirstQuoteIndex);
+    Candidate.FindLastChar(TEXT('\''), LastQuoteIndex);
+    if (FirstQuoteIndex != INDEX_NONE && LastQuoteIndex != INDEX_NONE && LastQuoteIndex > FirstQuoteIndex)
+    {
+        Candidate = Candidate.Mid(FirstQuoteIndex + 1, LastQuoteIndex - FirstQuoteIndex - 1);
+    }
+
+    Candidate = ExtractLeafToken(Candidate);
+
+    if (Candidate.StartsWith(TEXT("Default__")))
+    {
+        Candidate.RightChopInline(9, EAllowShrinking::No);
+    }
+
+    return Candidate;
 }

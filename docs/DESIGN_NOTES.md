@@ -34,7 +34,7 @@
 - 字段映射：
   - `ObjectId`：优先 `NetObjectId`，缺失回退为 `GameInstanceIndex:ObjectIndex` 组合键
   - `ObjectName`：优先 name 表，缺失回退 `Object_<index>`
-  - `ClassName`：优先对象 `TypeName`；缺失时尝试从对象名推断（如 `BP_PlayerCharacter_C_0 -> BP_PlayerCharacter_C`）；仍失败再回退 `TypeId_0x...`
+  - `ClassName`：优先对象 `TypeName`（先做规范化，支持 `Class'/Script/...'` 与脚本路径名提取短类名）；缺失时尝试从对象名推断（如 `BP_PlayerCharacter_C_0 -> BP_PlayerCharacter_C`）；仍失败再回退 `TypeId_0x...`
   - `TimeSec`：`Packet.TimeStamp`
   - `ConnectionId`：`Connection.ConnectionId`
   - `PacketId`：`SequenceNumber + 1`（避免 0）

@@ -73,6 +73,7 @@
 - 修复搜索过滤一致性问题：`SearchText` 在 aggregate 阶段也匹配事件名（`RpcCounts/PropertyCounts`），避免“按事件名搜索命中事件但被聚合过滤掉”。
 - 清理 `TraceReader` 过时 TODO，并补充会话读取/回退日志（reader 是否绑定、模块加载状态），提高诊断效率。
 - bridge 日志新增 `UnknownRatio` 输出，并在高占比场景给出告警，便于后续按 trace 样本迭代分类规则。
+- ClassName 映射增强：对 provider 的 `TypeName` 先做规范化（支持 `Class'/Script/...'`、脚本路径短名提取），再进行对象名推断回退。
 - 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Provider.SearchFields`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
 
 ## 7. 文档约定

@@ -313,9 +313,9 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                             FObjectNetMetadataParser::ParseObjectNameAndPath(RawObjectName, Event.ObjectName, Event.ObjectPath);
                                             if (!ObjectInfo->TypeName.IsEmpty())
                                             {
-                                                Event.ClassName = ObjectInfo->TypeName;
+                                                Event.ClassName = FObjectNetMetadataParser::NormalizeClassName(ObjectInfo->TypeName);
                                             }
-                                            else if (!FObjectNetMetadataParser::TryInferClassName(RawObjectName, Event.ClassName))
+                                            if (Event.ClassName.IsEmpty() && !FObjectNetMetadataParser::TryInferClassName(RawObjectName, Event.ClassName))
                                             {
                                                 Event.ClassName = ObjectInfo->TypeId != 0ull
                                                     ? FString::Printf(TEXT("TypeId_0x%llX"), ObjectInfo->TypeId)
