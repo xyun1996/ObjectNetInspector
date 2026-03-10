@@ -235,7 +235,7 @@ private:
             ];
     }
 
-    void OnSortRequested(const EColumnSortPriority::Type, const FName ColumnId, const EColumnSortMode::Type NewSortMode)
+    void OnSortRequested(const EColumnSortPriority::Type, const FName& ColumnId, const EColumnSortMode::Type NewSortMode)
     {
         SortMode = NewSortMode;
 

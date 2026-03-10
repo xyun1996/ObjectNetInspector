@@ -26,8 +26,7 @@ public class ObjectNetInspector : ModuleRules
                 "ToolMenus",
                 "WorkspaceMenuStructure",
                 "TraceAnalysis",
-                "TraceInsights",
-                "NetworkingInsights"
+                "TraceInsights"
             });
 
         // TODO: If the target UE version moves specific Insights APIs across modules,

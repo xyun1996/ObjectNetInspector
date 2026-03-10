@@ -1,6 +1,6 @@
 # WORKLOG - ObjectNetInspector
 
-更新时间：2026-03-09（Asia/Shanghai）
+更新时间：2026-03-10（Asia/Shanghai）
 
 ## 1. 项目目标（MVP）
 在 Unreal Insights 中提供对象级网络分析面板：
@@ -23,9 +23,12 @@
 - 模块已注册 Nomad Tab：`Object Net Inspector`
 - 会话读取采用桥接适配层：
   - `FObjectNetTraceReader` 支持注入 SessionReader
-  - `FObjectNetInsightsBridge` 作为真实 Insights API 接入边界（当前安全 stub）
+  - `FObjectNetInsightsBridge` 已接入 active session API
+  - 已实现 UE5.7 兼容 NetProfiler -> `FObjectNetEvent` 映射（`EnumeratePackets + EnumeratePacketContentEventsByIndex`）
+  - 已实现增强归因：`Kind` 多规则识别 + `Unknown` 回退，并输出 `TypeId` 作为 `ClassName` 回退值
+- 已新增最小自动化验证样例：`ObjectNetInspector.Provider.FilteringAndAggregation`
+- 该自动化样例已在 UE5.7 编辑器中执行成功（Success）
 - 工具栏已显示数据源状态：`Session/Mock` + 当前事件总数
-- README 已同步更新
 
 ## 3. 当前核心口径（必须保持）
 - “对象流量” = 可归因 payload bits/bytes 聚合值（调试与相对比较用途）
@@ -45,25 +48,18 @@
 - 会话桥接：
   - `Source/ObjectNetInspector/Public/ObjectNetInsightsBridge.h`
   - `Source/ObjectNetInspector/Private/Analysis/ObjectNetInsightsBridge.cpp`
+- 自动化样例：
+  - `Source/ObjectNetInspector/Private/Tests/ObjectNetProviderTests.cpp`
 
-## 5. 最近主要提交（按时间倒序）
-- `e204432` Finalize provider status UX and tab spawn interface
-- `10b9807` Add insights bridge stub and toolbar source status
-- `354c8aa` Register inspector tab and add session reader adapter
-- `a61dadb` Harden formatting API usage and refresh behavior
-- `a18719b` Add README draft and shared formatting utilities
-- `54d6277` Move plugin files to repository root layout
-- `151e421` Implement ObjectNetInspector analysis core and MVP Slate UI
-- `667d6dd` Add ObjectNetInspector plugin skeleton and core public headers
+## 5. 下一步任务
+1. 继续提升 `FObjectNetInsightsBridge` 的 `Kind` 归因准确率（减少 `Unknown` 与误判）
+2. 若 UE API 可提供，补充对象真实 `ClassName/ObjectPath`（替代 `TypeId` 回退）
+3. 视 UE 版本细化 Tab 在 Insights Workspace 菜单中的挂载
 
-## 6. 下一步任务（明天接着做）
-1. 在 `FObjectNetInsightsBridge` 中接入已验证的 active session API（优先保证能拿到会话/时间范围/连接信息）
-2. 将网络事件映射到 `FObjectNetEvent`（先保证对象关联正确，再补更细 bits 归因）
-3. 增加最小验证样例（过滤、聚合、N/A 行为）
-4. 视 UE 版本细化 Tab 在 Insights Workspace 菜单中的挂载
+## 6. 今天新增进展（2026-03-10）
+- 解决 UE5.7 编译兼容问题（UI OnSort 签名、头文件路径、桥接 API 适配）。
+- 在 UE5.7 下恢复真实事件映射链路（不再仅 session 元信息）。
+- 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation` 运行结果：Success。
 
-## 7. 跨设备继续工作的建议
-- 公司电脑拉取仓库后，先读：
-  1) `README.md`
-  2) `docs/WORKLOG.md`（本文件）
-- 再从 `ObjectNetInsightsBridge.cpp` 开始继续真实会话接入
+## 7. 文档约定
+- 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

@@ -17,18 +17,8 @@
   "Modules": [
     {
       "Name": "ObjectNetInspector",
-      "Type": "Developer",
+      "Type": "Editor",
       "LoadingPhase": "PostEngineInit"
-    }
-  ],
-  "Plugins": [
-    {
-      "Name": "TraceInsights",
-      "Enabled": true
-    },
-    {
-      "Name": "NetworkingInsights",
-      "Enabled": true
     }
   ]
 }

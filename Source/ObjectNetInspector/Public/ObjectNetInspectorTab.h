@@ -3,6 +3,6 @@
 #include "CoreMinimal.h"
 
 class SDockTab;
-struct FSpawnTabArgs;
+class FSpawnTabArgs;
 
 TSharedRef<SDockTab> SpawnObjectNetInspectorTab(const FSpawnTabArgs& SpawnTabArgs);
