@@ -1,5 +1,5 @@
 param(
-    [string]$ProjectPath = "G:\workspace\ue5\Lyra",
+    [string]$ProjectPath = "E:\eworkspace\Lyra",
 
     [string]$EngineRoot = "",
 
@@ -51,6 +51,7 @@ function Resolve-EngineRoot {
     }
 
     $candidates += @(
+        "E:\eworkspace\UnrealEngine",
         "G:\workspace\repo\github\UnrealEngine",
         "C:\Program Files\Epic Games\UE_5.7",
         "C:\Program Files\Epic Games\UE_5.6",

@@ -16,7 +16,7 @@
 在仓库根目录执行：
 
 ```powershell
-pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "G:\workspace\ue5\Lyra"
+pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "E:\eworkspace\Lyra"
 ```
 
 默认行为：
@@ -35,7 +35,7 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "G:\workspace\ue5\Lyra"
 
 ```powershell
 pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
-  -ProjectPath "G:\workspace\ue5\Lyra" `
+  -ProjectPath "E:\eworkspace\Lyra" `
   -TestName "ObjectNetInspector.Classifier.KindInference"
 ```
 
