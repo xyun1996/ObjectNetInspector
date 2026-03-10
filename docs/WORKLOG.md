@@ -100,6 +100,8 @@
 - 自动化测试再次执行（2026-03-10 20:37 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 - 脚本 `-SkipBuild` 体验增强：新增插件 DLL 预检，若二进制缺失会明确提示“先跑一次不带 `-SkipBuild` 的完整构建”。
 - 单测验证（2026-03-10 20:39 CST）：`ObjectNetInspector.Provider.FilteringAndAggregation` Success（1/1）。
+- bridge 诊断日志增强：`ClassName` 来源统计细分为 `TypeName / ObjectName / EventScope / TypeIdFallback`，便于定向评估哪条回退链路贡献最大。
+- 自动化测试再次执行（2026-03-10 20:38 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
