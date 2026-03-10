@@ -177,10 +177,12 @@ private:
 
     FText GetDataSourceText() const
     {
+        const double UnknownPct = Provider->GetLastUnknownRatio() * 100.0;
         return FText::FromString(FString::Printf(
-            TEXT("Source: %s (%d events)"),
+            TEXT("Source: %s (%d events, Unknown %.1f%%)"),
             *Provider->GetLastDataSourceLabel(),
-            Provider->GetLastEventCount()));
+            Provider->GetLastEventCount(),
+            UnknownPct));
     }
 
     FSlateColor GetDataSourceColor() const

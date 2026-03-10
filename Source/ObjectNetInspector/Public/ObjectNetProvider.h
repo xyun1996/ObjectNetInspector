@@ -34,6 +34,8 @@ public:
     EObjectNetDataSourceKind GetLastDataSourceKind() const;
     FString GetLastDataSourceLabel() const;
     int32 GetLastEventCount() const;
+    int32 GetLastUnknownEventCount() const;
+    double GetLastUnknownRatio() const;
 
     FObjectNetTraceReader& GetReader();
     const FObjectNetTraceReader& GetReader() const;
@@ -48,4 +50,5 @@ private:
     TArray<FObjectNetAggregate> CurrentAggregates;
     EObjectNetDataSourceKind LastDataSourceKind;
     int32 LastEventCount;
+    int32 LastUnknownEventCount;
 };

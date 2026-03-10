@@ -91,6 +91,8 @@
 - 脚本验证结果（2026-03-10 20:28 CST）：
   - 全量：`pwsh -File .\scripts\Run-ObjectNetTests.ps1` -> Success（4/4）
   - 单测：`pwsh -File .\scripts\Run-ObjectNetTests.ps1 -SkipBuild -TestName "ObjectNetInspector.Classifier.KindInference"` -> Success（1/1）
+- Provider/Toolbar 新增归因质量可视化：显示 `Unknown` 占比（`Unknown%`），便于根据真实会话数据持续调优分类规则。
+- 自动化测试再次执行（2026-03-10 20:32 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
