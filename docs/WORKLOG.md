@@ -95,6 +95,9 @@
 - 自动化测试再次执行（2026-03-10 20:32 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 - `Provider.FilteringAndAggregation` 测试新增 `Unknown` 事件样本，并断言 `GetLastUnknownEventCount()/GetLastUnknownRatio()`，为归因质量指标提供回归保护。
 - 自动化测试再次执行（2026-03-10 20:34 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
+- ClassName 回退链路增强：在 `TypeName` 与对象名都不足时，新增“从事件名作用域推断类名”（如 `AbilitySystemComponent::ServerTryActivateAbility`）。
+- `ObjectNetMetadataParser` 新增 `TryInferClassNameFromEventName`，并增加对应自动化回归用例。
+- 自动化测试再次执行（2026-03-10 20:37 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

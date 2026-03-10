@@ -383,6 +383,10 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                                 {
                                                     ++ClassFromInferredNameCount;
                                                 }
+                                                else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(ClassificationText, Event.ClassName))
+                                                {
+                                                    ++ClassFromInferredNameCount;
+                                                }
                                                 else
                                                 {
                                                     Event.ClassName = ObjectInfo->TypeId != 0ull

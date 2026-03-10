@@ -151,6 +151,37 @@ bool FObjectNetMetadataParser::TryInferClassName(const FString& RawObjectName, F
     return true;
 }
 
+bool FObjectNetMetadataParser::TryInferClassNameFromEventName(const FString& RawEventName, FString& OutClassName)
+{
+    OutClassName.Empty();
+
+    FString Candidate = StripOuterQuotes(RawEventName);
+    Candidate.TrimStartAndEndInline();
+    if (Candidate.IsEmpty())
+    {
+        return false;
+    }
+
+    int32 ScopeIndex = INDEX_NONE;
+    if (Candidate.FindLastChar(TEXT(':'), ScopeIndex) && ScopeIndex > 0)
+    {
+        // Handle "Class::Function" and similar event-name scopes.
+        if (ScopeIndex > 0 && Candidate[ScopeIndex - 1] == TEXT(':'))
+        {
+            Candidate = Candidate.Left(ScopeIndex - 1);
+        }
+    }
+
+    Candidate = NormalizeClassName(Candidate);
+    if (Candidate.IsEmpty())
+    {
+        return false;
+    }
+
+    OutClassName = Candidate;
+    return true;
+}
+
 FString FObjectNetMetadataParser::NormalizeClassName(const FString& RawClassName)
 {
     FString Candidate = RawClassName;

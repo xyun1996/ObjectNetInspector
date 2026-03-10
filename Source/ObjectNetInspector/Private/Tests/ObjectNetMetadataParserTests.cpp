@@ -101,6 +101,24 @@ bool FObjectNetMetadataParserTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("TrashClass prefix should be stripped from class name"), ClassName, FString(TEXT("BP_DebugPawn_C")));
     }
 
+    {
+        FString ClassName;
+        const bool bInferred = FObjectNetMetadataParser::TryInferClassNameFromEventName(
+            TEXT("/Script/GameplayAbilities.AbilitySystemComponent::ServerTryActivateAbility"),
+            ClassName);
+        TestTrue(TEXT("Scoped event name should infer class name"), bInferred);
+        TestEqual(TEXT("Scoped event name should infer normalized class"), ClassName, FString(TEXT("AbilitySystemComponent")));
+    }
+
+    {
+        FString ClassName;
+        const bool bInferred = FObjectNetMetadataParser::TryInferClassNameFromEventName(
+            TEXT("BP_Weapon_C::ClientOnFireConfirmed"),
+            ClassName);
+        TestTrue(TEXT("Blueprint scoped event should infer class name"), bInferred);
+        TestEqual(TEXT("Blueprint scoped event should keep BP class token"), ClassName, FString(TEXT("BP_Weapon_C")));
+    }
+
     return true;
 }
 
