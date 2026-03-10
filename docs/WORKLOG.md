@@ -71,6 +71,7 @@
 - 扩展 `Kind` 分类词典（`RepLayout/PushModel/ChangeList/CallRemoteFunction` 等）并补充回归用例，降低 UE 常见命名下的 `Unknown`。
 - `Kind` 分类新增“弱信号阈值 + 混合冲突回退”，降低 `RemoteHandle`、`PrepareData`、`ServerRepFunction` 等边界命名误判。
 - 修复搜索过滤一致性问题：`SearchText` 在 aggregate 阶段也匹配事件名（`RpcCounts/PropertyCounts`），避免“按事件名搜索命中事件但被聚合过滤掉”。
+- 清理 `TraceReader` 过时 TODO，并补充会话读取/回退日志（reader 是否绑定、模块加载状态），提高诊断效率。
 - 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Provider.SearchFields`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
 
 ## 7. 文档约定

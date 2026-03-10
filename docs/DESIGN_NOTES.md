@@ -21,6 +21,10 @@
 - `FObjectNetProvider`：面向 UI 的协调层（刷新、筛选、选中态、数据源状态）。
 - Slate UI：Toolbar + ObjectList + Detail + EventTable。
 
+补充约定（2026-03-10）：
+- `TraceReader` 本身不直接依赖具体 Insights 提取 API，只消费可注入的 `SessionReader`；真实会话提取逻辑放在 bridge。
+- 当会话读取失败时输出明确日志（是否绑定 reader、模块加载状态），便于定位为何回退到 mock。
+
 ## 4. UE5.7 事件映射方案
 - 数据来源：`INetProfilerProvider`
   - `ReadNames` 生成 name 索引

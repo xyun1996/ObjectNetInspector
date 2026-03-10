@@ -45,18 +45,22 @@ bool FObjectNetTraceReader::InitializeFromActiveSession()
         if (SessionReader(SessionEvents))
         {
             Events = MoveTemp(SessionEvents);
+            UE_LOG(LogObjectNetTraceReader, Verbose, TEXT("Session reader returned %d events."), Events.Num());
             return true;
         }
+
+        UE_LOG(LogObjectNetTraceReader, Verbose, TEXT("Session reader was bound but returned no active session data."));
     }
 
-    // TODO: Wire real extraction from the active Unreal Insights networking analysis session.
-    // We intentionally do not guess uncertain API names here.
+    // Session extraction is expected to be provided via injected SessionReader (bridge-backed).
+    // When unavailable, provider will fall back to mock data.
     const bool bTraceInsightsLoaded = FModuleManager::Get().IsModuleLoaded(TEXT("TraceInsights"));
     const bool bNetworkingInsightsLoaded = FModuleManager::Get().IsModuleLoaded(TEXT("NetworkingInsights"));
     UE_LOG(
         LogObjectNetTraceReader,
         Verbose,
-        TEXT("No session reader bound. TraceInsightsLoaded=%s NetworkingInsightsLoaded=%s"),
+        TEXT("No active session data. HasSessionReader=%s TraceInsightsLoaded=%s NetworkingInsightsLoaded=%s"),
+        SessionReader ? TEXT("true") : TEXT("false"),
         bTraceInsightsLoaded ? TEXT("true") : TEXT("false"),
         bNetworkingInsightsLoaded ? TEXT("true") : TEXT("false"));
 
