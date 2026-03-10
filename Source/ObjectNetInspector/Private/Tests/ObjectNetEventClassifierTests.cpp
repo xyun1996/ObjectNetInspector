@@ -39,6 +39,16 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::Property));
 
     TestEqual(
+        TEXT("NetSerialize signal should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("InventoryNetSerializeDelta"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
+        TEXT("Iris fragment signal should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("IrisReplicationFragmentDescriptor"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
         TEXT("Remote function signal should map to Rpc"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("CallRemoteFunction"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Rpc));
