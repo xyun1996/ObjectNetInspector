@@ -16,6 +16,11 @@
 - 工具栏显示数据源状态（Session / Mock）、当前事件总数、`Unknown%` 与 `PacketRef%`
 - 无真实 Trace 接入时自动回落到 `LoadMockDataForTesting()`
 
+### UnrealInsights 程序侧支持（UE5.7）
+- 插件模块已支持 `EditorAndProgram`，并允许在 `UnrealInsights.exe` 进程加载（`ProgramAllowList=UnrealInsights`）。
+- 若在 Unreal Insights 中打开 `.utrace` 后可见 `Source: Session`，表示已走真实会话链路。
+- 若显示 `Source: Mock`，表示当前未取到 active session，会自动回落 mock 数据。
+
 ## 3. 非目标
 - 不做运行时 UMG/HUD
 - 不做 socket 抓包与底层协议反解
@@ -71,3 +76,21 @@
 ## 9. 文本编辑规则
 - 为避免 CRLF/LF 混乱和误写入 `` `r`n `` 字面量，请遵循：
   - [docs/TEXT_HYGIENE_RULES.md](docs/TEXT_HYGIENE_RULES.md)
+
+## 10. UnrealInsights 打开方式（示例）
+先确保 `UnrealInsights` 目标已编译一次（会产出 Program 侧插件模块）：
+
+```powershell
+E:\eworkspace\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
+  UnrealInsights Win64 Development `
+  -Project="E:\eworkspace\Lyra\Lyra.uproject" `
+  -WaitMutex -FromMsBuild
+```
+
+然后启动：
+
+```powershell
+E:\eworkspace\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
+  -project="E:\eworkspace\Lyra\Lyra.uproject" `
+  -OpenTraceFile="E:\path\to\sample.utrace"
+```

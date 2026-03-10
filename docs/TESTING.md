@@ -57,3 +57,33 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
 - 打开 `Tools -> Session Frontend -> Automation`
 - 搜索对应测试名
 - 运行并确认结果为 Success
+
+## 6. Unreal Insights 程序侧验证（手工）
+用于验证插件是否能在 `UnrealInsights.exe` 中加载并注册面板：
+
+1. 先编译 Program 目标（至少一次）：
+
+```powershell
+E:\eworkspace\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
+  UnrealInsights Win64 Development `
+  -Project="E:\eworkspace\Lyra\Lyra.uproject" `
+  -WaitMutex -FromMsBuild
+```
+
+2. 打开 trace：
+
+```powershell
+E:\eworkspace\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
+  -project="E:\eworkspace\Lyra\Lyra.uproject" `
+  -OpenTraceFile="E:\eworkspace\Lyra\Saved\Profiling\20260310_215400_829D80.utrace" `
+  -log
+```
+
+3. 日志判定（`Engine\Programs\UnrealInsights\Saved\Logs\UnrealInsights.log`）：
+- 应出现：`LogPluginManager: Mounting Project plugin ObjectNetInspector`
+- 应出现：`LogObjectNetInspector: ObjectNetInspector module started and tab spawner registered.`
+
+4. UI 判定：
+- 打开 `Object Net Inspector` 面板后点击 `Refresh`；
+- 若读取到 active session，顶部状态应为 `Source: Session`；
+- 否则会回落 `Source: Mock`（这代表会话读取链路未命中，而不是面板不可用）。

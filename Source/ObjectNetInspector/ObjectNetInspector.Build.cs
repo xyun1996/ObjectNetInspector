@@ -18,16 +18,29 @@ public class ObjectNetInspector : ModuleRules
             new[]
             {
                 "ApplicationCore",
-                "Engine",
                 "InputCore",
                 "Slate",
                 "SlateCore",
-                "EditorStyle",
-                "ToolMenus",
-                "WorkspaceMenuStructure",
                 "TraceAnalysis",
-                "TraceInsights"
+                "TraceInsights",
+                "TraceInsightsCore"
             });
+
+        if (Target.bCompileAgainstEngine)
+        {
+            PrivateDependencyModuleNames.Add("Engine");
+        }
+
+        if (Target.Type == TargetType.Editor)
+        {
+            PrivateDependencyModuleNames.AddRange(
+                new[]
+                {
+                    "EditorStyle",
+                    "ToolMenus",
+                    "WorkspaceMenuStructure"
+                });
+        }
 
         // TODO: If the target UE version moves specific Insights APIs across modules,
         // keep this list minimal and adjust only with verified module names.

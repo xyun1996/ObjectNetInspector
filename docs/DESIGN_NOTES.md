@@ -83,3 +83,20 @@
 - bridge 在分类阶段不再只依赖单一名称字段：会组合 `EventTypeName + ContentName` 作为分类输入，提升命中率；UI 显示名保持可读优先（优先非泛化 EventTypeName，其次 ContentName）。
 - 新增泛化事件名识别（`Event/NetEvent/ContentEvent/Payload/(UnknownEvent)`），避免这些标签污染分类结果。
 - Provider 增加 `PacketRef` 计数/占比指标，并在 Toolbar 文本中展示 `Unknown% + PacketRef%`，用于快速观察归因质量变化。
+
+## 10. UnrealInsights 程序侧改造（2026-03-10）
+- 插件描述调整：
+  - `SupportedPrograms: ["UnrealInsights"]`
+  - 模块 `Type` 从 `Editor` 调整为 `EditorAndProgram`
+  - 增加 `ProgramAllowList: ["UnrealInsights"]`
+- 构建依赖分层：
+  - 通用依赖保留 `Slate/TraceInsights/TraceServices/TraceAnalysis`
+  - `Engine` 仅在 `Target.bCompileAgainstEngine` 时添加
+  - `EditorStyle/ToolMenus/WorkspaceMenuStructure` 仅 `TargetType.Editor` 添加
+- 模块代码防护：
+  - `ToolMenus` 和 `LevelEditor.MainMenu.Window` 注入逻辑只在 `WITH_EDITOR` 编译路径启用
+  - Program 路径仅保留 tab spawner 与数据链路，不依赖 Editor-only API
+- 已验证结果：
+  - `LyraEditor` 自动化测试保持全绿
+  - `UnrealInsights` Program 目标可成功编译，并产出 `UnrealInsights-ObjectNetInspector.dll`
+  - 运行日志可见插件挂载与模块启动日志

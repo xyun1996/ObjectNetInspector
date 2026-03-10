@@ -109,6 +109,43 @@
 - Provider/Toolbar 质量指标扩展：新增 `PacketRef` 事件计数与占比（`PacketRef%`），便于和 `Unknown%` 一起追踪归因演进。
 - `ObjectNetInspector.Provider.FilteringAndAggregation` 新增 `PacketRef` 样本与断言（事件数、`PacketRefCount`、`PacketRefRatio`）。
 - 自动化测试再次执行（2026-03-10 20:47 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
+- 为解决“Editor 中可见、UnrealInsights 中不可见”的问题，启动 UnrealInsights 程序侧改造（`EditorAndProgram`）。
+- `ObjectNetInspector.uplugin` 调整为：
+  - `SupportedPrograms = UnrealInsights`
+  - 模块 `Type = EditorAndProgram`
+  - `ProgramAllowList = UnrealInsights`
+- `Build.cs` 依赖分层完成：
+  - Editor-only 依赖（`EditorStyle/ToolMenus/WorkspaceMenuStructure`）仅在 `TargetType.Editor` 引入
+  - Program 路径保留 Trace/Slate 核心依赖，避免 Editor-only 链接问题
+- 模块代码增加 `WITH_EDITOR` 守卫：
+  - Editor 独有 `Window` 菜单注入逻辑不进入 Program 编译路径
+  - Program 路径保留 tab spawner 与数据刷新能力
+- Program 侧实机验证：
+  - 编译 `UnrealInsights Win64 Development -Project=Lyra` 成功
+  - 日志确认：`Mounting Project plugin ObjectNetInspector`
+  - 日志确认：`ObjectNetInspector module started and tab spawner registered.`
+- Editor 回归验证（2026-03-10 22:29 CST）：
+  - `pwsh -File .\scripts\Run-ObjectNetTests.ps1` -> Success（4/4，failed=0）
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
+
+## 8. Unreal Insights 程序侧改造计划（2026-03-10）
+目标：让 `Object Net Inspector` 在 `UnrealInsights.exe` 中作为 Insights 扩展面板运行，并读取 active session（不再依赖 Editor 进程内回落）。
+
+阶段计划：
+1. 模块形态切换  
+   - `uplugin` 调整为 `EditorAndProgram`，限定 `ProgramAllowList=UnrealInsights`。  
+   - 保留 Editor 路径，确保现有项目工作流不回归。
+2. 依赖分层  
+   - `Build.cs` 按 `Editor` / `Program` 条件裁剪依赖。  
+   - Editor 专属依赖（`ToolMenus`、`EditorStyle` 等）不进入 Program 构建链。
+3. Tab 与菜单策略  
+   - 保留通用 Tab 注册（Insights/Editor 均可用）。  
+   - Editor 独有 `Window` 菜单入口做编译期守卫；Insights 侧依赖 Workspace/Nomad 入口。
+4. 会话读取验证  
+   - 在 `UnrealInsights.exe` 打开 `.utrace` 验证 `Source: Session`。  
+   - 会话不可得时仍保持 mock fallback（`Source: Mock`）与日志告警。
+5. 回归与文档  
+   - Editor 自动化测试必须保持全绿。  
+   - 补充 README/TESTING 的 Insights 启动与验证步骤。

@@ -2,7 +2,9 @@
 
 #include "Framework/Docking/TabManager.h"
 #include "Modules/ModuleManager.h"
+#if WITH_EDITOR
 #include "ToolMenus.h"
+#endif
 
 #if __has_include("WorkspaceMenuStructure.h") && __has_include("WorkspaceMenuStructureModule.h")
 #include "WorkspaceMenuStructure.h"
@@ -37,16 +39,20 @@ public:
 
         UE_LOG(LogObjectNetInspector, Log, TEXT("ObjectNetInspector module started and tab spawner registered."));
 
+#if WITH_EDITOR
         UToolMenus::RegisterStartupCallback(
             FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FObjectNetInspectorModule::RegisterMenus));
+#endif
     }
 
     virtual void ShutdownModule() override
     {
+#if WITH_EDITOR
         if (UToolMenus* ToolMenus = UToolMenus::TryGet())
         {
             ToolMenus->UnregisterOwner(this);
         }
+#endif
 
         if (FModuleManager::Get().IsModuleLoaded(TEXT("Slate")))
         {
@@ -57,6 +63,7 @@ public:
     }
 
 private:
+#if WITH_EDITOR
     void RegisterMenus()
     {
         UToolMenu* WindowMenu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.MainMenu.Window"));
@@ -78,6 +85,7 @@ private:
                     FGlobalTabmanager::Get()->TryInvokeTab(ObjectNetInspectorTabId);
                 })));
     }
+#endif
 };
 
 IMPLEMENT_MODULE(FObjectNetInspectorModule, ObjectNetInspector)

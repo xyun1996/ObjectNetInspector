@@ -13,12 +13,19 @@
   "CanContainContent": false,
   "IsBetaVersion": true,
   "IsExperimentalVersion": true,
+  "EnabledByDefault": true,
   "Installed": false,
+  "SupportedPrograms": [
+    "UnrealInsights"
+  ],
   "Modules": [
     {
       "Name": "ObjectNetInspector",
-      "Type": "Editor",
-      "LoadingPhase": "PostEngineInit"
+      "Type": "EditorAndProgram",
+      "LoadingPhase": "Default",
+      "ProgramAllowList": [
+        "UnrealInsights"
+      ]
     }
   ]
 }
