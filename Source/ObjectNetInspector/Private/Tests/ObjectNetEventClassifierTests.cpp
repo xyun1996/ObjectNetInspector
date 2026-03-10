@@ -54,6 +54,11 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::Rpc));
 
     TestEqual(
+        TEXT("ProcessRemoteFunction should map to Rpc"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ProcessRemoteFunctionForChannel"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Rpc));
+
+    TestEqual(
         TEXT("Weak remote hint alone should stay Unknown"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("RemoteHandle"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Unknown));
@@ -72,6 +77,21 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         TEXT("PrepareData should not be misclassified by rep substring"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("PrepareData"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Unknown));
+
+    TestEqual(
+        TEXT("FunctionGraph editor context should stay Unknown"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("FunctionGraphCompilePass"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Unknown));
+
+    TestEqual(
+        TEXT("FunctionTable editor context should stay Unknown"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("BuildFunctionTable"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Unknown));
+
+    TestEqual(
+        TEXT("NetField lifecycle should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("NetFieldRetirementState"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
 
     TestEqual(
         TEXT("Ambiguous rpc+rep mix should stay Unknown"),

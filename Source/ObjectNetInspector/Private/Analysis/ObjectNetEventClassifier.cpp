@@ -32,10 +32,13 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
     static const FWeightedTerm RpcTerms[] =
     {
         { TEXT("rpc"), 4 },
-        { TEXT("function"), 2 },
+        { TEXT("function"), 1 },
         { TEXT("remotefunction"), 3 },
-        { TEXT("callremote"), 2 },
+        { TEXT("processremotefunction"), 4 },
+        { TEXT("callremote"), 3 },
         { TEXT("sendrpc"), 3 },
+        { TEXT("dispatchrpc"), 3 },
+        { TEXT("invoke"), 1 },
         { TEXT("netmulticast"), 4 },
         { TEXT("multicast"), 3 },
         { TEXT("remote"), 1 }
@@ -48,13 +51,20 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("replayout"), 3 },
         { TEXT("repstate"), 3 },
         { TEXT("replicated"), 3 },
+        { TEXT("replicator"), 3 },
         { TEXT("repnotify"), 3 },
+        { TEXT("replicationcondition"), 3 },
         { TEXT("netserialize"), 3 },
+        { TEXT("serializeproperty"), 3 },
+        { TEXT("netfield"), 3 },
         { TEXT("iris"), 2 },
         { TEXT("fragment"), 2 },
         { TEXT("descriptor"), 2 },
         { TEXT("pushmodel"), 3 },
         { TEXT("changelist"), 2 },
+        { TEXT("lifetime"), 2 },
+        { TEXT("retirement"), 2 },
+        { TEXT("condition"), 1 },
         { TEXT("state"), 1 },
         { TEXT("delta"), 2 },
         { TEXT("array"), 2 },
@@ -63,10 +73,21 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("quantized"), 1 }
     };
 
-    const int32 RpcScore = ComputeScore(EventName, RpcTerms, UE_ARRAY_COUNT(RpcTerms));
+    int32 RpcScore = ComputeScore(EventName, RpcTerms, UE_ARRAY_COUNT(RpcTerms));
     const int32 PropertyScore = ComputeScore(EventName, PropertyTerms, UE_ARRAY_COUNT(PropertyTerms));
     const bool bHasRepLike = EventName.Contains(TEXT("rep"), SearchCase);
     const bool bHasRpcLike = EventName.Contains(TEXT("rpc"), SearchCase) || EventName.Contains(TEXT("function"), SearchCase);
+    const bool bLooksLikeEditorFunctionContext =
+        EventName.Contains(TEXT("functionlibrary"), SearchCase) ||
+        EventName.Contains(TEXT("functiongraph"), SearchCase) ||
+        EventName.Contains(TEXT("compilefunction"), SearchCase) ||
+        EventName.Contains(TEXT("functiontable"), SearchCase);
+
+    // "Function" is a weak signal; discount editor-only contexts to avoid false RPC positives.
+    if (bLooksLikeEditorFunctionContext && RpcScore > 0 && PropertyScore == 0)
+    {
+        RpcScore = FMath::Max(0, RpcScore - 2);
+    }
 
     // Mixed rep/function names are often ambiguous in practice (eg. ServerRepFunction).
     if (bHasRepLike && bHasRpcLike && RpcScore < 4 && PropertyScore < 4)

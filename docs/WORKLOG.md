@@ -80,6 +80,9 @@
 - `Kind` 分类补充 UE5.7/Iris 常见信号词（`NetSerialize`、`Iris`、`Fragment`、`Descriptor`）并新增回归用例，继续压降 `Unknown`。
 - `ClassName` 规范化补充临时前缀清洗（`REINST_`、`SKEL_`、`TRASHCLASS_`），减少编辑器态类名噪声对对象聚合可读性的影响。
 - 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Provider.SearchFields`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
+- `Kind` 归因新增网络信号词（`ProcessRemoteFunction`、`DispatchRpc`、`NetField`、`Retirement`、`Lifetime`、`SerializeProperty`），并下调 `function` 权重，减少非网络 function 命名误判。
+- 增加“编辑器 function 语境抑制”规则（`FunctionGraph/FunctionTable/CompileFunction/FunctionLibrary`），进一步降低 RPC 误报。
+- 新增回归用例覆盖上述边界：`ProcessRemoteFunctionForChannel`、`FunctionGraphCompilePass`、`BuildFunctionTable`、`NetFieldRetirementState`。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

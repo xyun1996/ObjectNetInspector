@@ -70,3 +70,9 @@
 ## 8. 文档维护约定
 - 每次做结构性改动（接口、口径、流程、取舍）时，同步更新本文件。
 - 每次迭代结果与待办同步到 `docs/WORKLOG.md`。
+
+## 9. 2026-03-10 归因强化补充
+- `Kind` 分类新增信号词：`processremotefunction / dispatchrpc / serializeproperty / netfield / retirement / lifetime / replicationcondition`。
+- 将 `function` 从强信号降为弱信号，降低“包含 function 但并非网络 RPC”的误判概率。
+- 新增编辑器语境抑制：`FunctionGraph/FunctionTable/CompileFunction/FunctionLibrary` 命中时下调 RPC 分，避免工具链/编辑器事件误判为 RPC。
+- 保持“冲突回退 Unknown”策略不变，优先避免错判而不是过度归类。
