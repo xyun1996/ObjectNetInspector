@@ -86,6 +86,16 @@ bool FObjectNetMetadataParserTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Script type path should normalize to leaf class"), ClassName, FString(TEXT("Character")));
     }
 
+    {
+        const FString ClassName = FObjectNetMetadataParser::NormalizeClassName(TEXT("Class'/Script/LyraGame.REINST_BP_Rifle_C_123'"));
+        TestEqual(TEXT("Reinst prefix should be stripped from class name"), ClassName, FString(TEXT("BP_Rifle_C_123")));
+    }
+
+    {
+        const FString ClassName = FObjectNetMetadataParser::NormalizeClassName(TEXT("SKEL_BP_PlayerCharacter_C"));
+        TestEqual(TEXT("Skel prefix should be stripped from class name"), ClassName, FString(TEXT("BP_PlayerCharacter_C")));
+    }
+
     return true;
 }
 

@@ -67,6 +67,25 @@ static FString StripOuterQuotes(const FString& RawValue)
     return Value;
 }
 
+static void StripKnownTransientClassPrefixes(FString& InOutClassName)
+{
+    static const TCHAR* Prefixes[] =
+    {
+        TEXT("REINST_"),
+        TEXT("SKEL_"),
+        TEXT("TRASHCLASS_")
+    };
+
+    for (const TCHAR* Prefix : Prefixes)
+    {
+        if (InOutClassName.StartsWith(Prefix))
+        {
+            InOutClassName.RightChopInline(FCString::Strlen(Prefix), EAllowShrinking::No);
+            break;
+        }
+    }
+}
+
 static bool LooksLikeObjectPath(const FString& RawValue)
 {
     return RawValue.Contains(TEXT("/"), ESearchCase::CaseSensitive) ||
@@ -156,6 +175,7 @@ FString FObjectNetMetadataParser::NormalizeClassName(const FString& RawClassName
     {
         Candidate.RightChopInline(9, EAllowShrinking::No);
     }
+    StripKnownTransientClassPrefixes(Candidate);
 
     return Candidate;
 }
