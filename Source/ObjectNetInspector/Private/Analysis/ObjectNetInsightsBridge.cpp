@@ -55,6 +55,21 @@ static uint32 MakePacketId(const uint32 PacketSequence, const uint32 PacketIndex
     return static_cast<uint32>(Candidate);
 }
 
+static bool IsGenericEventLabel(const FString& Label)
+{
+    if (Label.IsEmpty())
+    {
+        return true;
+    }
+
+    const ESearchCase::Type SearchCase = ESearchCase::IgnoreCase;
+    return Label.Equals(TEXT("(UnknownEvent)"), SearchCase) ||
+        Label.Equals(TEXT("Event"), SearchCase) ||
+        Label.Equals(TEXT("NetEvent"), SearchCase) ||
+        Label.Equals(TEXT("ContentEvent"), SearchCase) ||
+        Label.Equals(TEXT("Payload"), SearchCase);
+}
+
 } // namespace
 
 bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& OutEvents)
@@ -295,22 +310,53 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
 
                                             const FBridgeEventTypeInfo* EventTypeInfo = EventTypeByIndex.Find(ContentEvent.EventTypeIndex);
 
-                                            FString EventName;
+                                            FString EventTypeName;
                                             if (EventTypeInfo != nullptr && !EventTypeInfo->Name.IsEmpty())
                                             {
-                                                EventName = EventTypeInfo->Name;
+                                                EventTypeName = EventTypeInfo->Name;
                                             }
-                                            else if (const FString* ContentName = NameByIndex.Find(ContentEvent.NameIndex))
+
+                                            FString ContentName;
+                                            if (const FString* FoundContentName = NameByIndex.Find(ContentEvent.NameIndex))
                                             {
-                                                EventName = *ContentName;
+                                                ContentName = *FoundContentName;
+                                            }
+
+                                            FString DisplayEventName;
+                                            if (!EventTypeName.IsEmpty() && !IsGenericEventLabel(EventTypeName))
+                                            {
+                                                DisplayEventName = EventTypeName;
+                                            }
+                                            else if (!ContentName.IsEmpty())
+                                            {
+                                                DisplayEventName = ContentName;
+                                            }
+                                            else if (!EventTypeName.IsEmpty())
+                                            {
+                                                DisplayEventName = EventTypeName;
                                             }
                                             else
                                             {
-                                                EventName = TEXT("(UnknownEvent)");
+                                                DisplayEventName = TEXT("(UnknownEvent)");
+                                            }
+
+                                            FString ClassificationText = DisplayEventName;
+                                            if (!EventTypeName.IsEmpty() && !DisplayEventName.Equals(EventTypeName, ESearchCase::IgnoreCase))
+                                            {
+                                                ClassificationText += TEXT(" ");
+                                                ClassificationText += EventTypeName;
+                                            }
+                                            if (!ContentName.IsEmpty() && !DisplayEventName.Equals(ContentName, ESearchCase::IgnoreCase))
+                                            {
+                                                ClassificationText += TEXT(" ");
+                                                ClassificationText += ContentName;
                                             }
 
                                             const uint16 EventLevel = EventTypeInfo != nullptr ? EventTypeInfo->Level : 0;
-                                            const EObjectNetEventKind Kind = FObjectNetEventClassifier::InferKind(EventName, EventLevel, static_cast<uint8>(ContentEvent.Level));
+                                            const EObjectNetEventKind Kind = FObjectNetEventClassifier::InferKind(
+                                                ClassificationText,
+                                                EventLevel,
+                                                static_cast<uint8>(ContentEvent.Level));
 
                                             const FString RawObjectName = !ObjectInfo->Name.IsEmpty()
                                                 ? ObjectInfo->Name
@@ -350,7 +396,7 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                             }
                                             Event.Kind = Kind;
                                             Event.Direction = ToDirection(Mode);
-                                            Event.EventName = MoveTemp(EventName);
+                                            Event.EventName = MoveTemp(DisplayEventName);
                                             Event.PacketId = PacketId;
 
                                             if (ContentEvent.EndPos > ContentEvent.StartPos)

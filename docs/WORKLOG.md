@@ -83,6 +83,9 @@
 - `Kind` 归因新增网络信号词（`ProcessRemoteFunction`、`DispatchRpc`、`NetField`、`Retirement`、`Lifetime`、`SerializeProperty`），并下调 `function` 权重，减少非网络 function 命名误判。
 - 增加“编辑器 function 语境抑制”规则（`FunctionGraph/FunctionTable/CompileFunction/FunctionLibrary`），进一步降低 RPC 误报。
 - 新增回归用例覆盖上述边界：`ProcessRemoteFunctionForChannel`、`FunctionGraphCompilePass`、`BuildFunctionTable`、`NetFieldRetirementState`。
+- bridge 事件归因输入增强：分类时组合 `EventTypeName + ContentName`，显示名与分类文本解耦，降低因单字段缺失/泛化命名导致的 `Unknown`。
+- 元数据解析回归补充：`TRASHCLASS_` 前缀规范化新增自动化覆盖。
+- 自动化测试再次执行（2026-03-10 20:21 CST）：`ObjectNetInspector.` 全部 Success（4/4，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

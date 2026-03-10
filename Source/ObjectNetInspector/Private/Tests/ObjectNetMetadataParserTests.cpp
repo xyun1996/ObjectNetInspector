@@ -96,6 +96,11 @@ bool FObjectNetMetadataParserTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Skel prefix should be stripped from class name"), ClassName, FString(TEXT("BP_PlayerCharacter_C")));
     }
 
+    {
+        const FString ClassName = FObjectNetMetadataParser::NormalizeClassName(TEXT("TRASHCLASS_BP_DebugPawn_C"));
+        TestEqual(TEXT("TrashClass prefix should be stripped from class name"), ClassName, FString(TEXT("BP_DebugPawn_C")));
+    }
+
     return true;
 }
 
