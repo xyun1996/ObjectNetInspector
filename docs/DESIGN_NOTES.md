@@ -46,8 +46,10 @@
 
 ## 6. 验证
 - 已新增 `FObjectNetMetadataParser`，集中处理对象名/路径拆分与类名启发式推断，并配套回归测试。
+- 已修复聚合阶段搜索匹配口径：除对象字段外，也匹配 `RpcCounts/PropertyCounts` 中的事件名键，保证按事件名搜索不会在 aggregate 过滤阶段丢失结果。
 - 自动化测试：
   - `ObjectNetInspector.Provider.FilteringAndAggregation`
+  - `ObjectNetInspector.Provider.SearchFields`
   - `ObjectNetInspector.Classifier.KindInference`
   - `ObjectNetInspector.MetadataParser.ObjectNamePath`
 - 标准执行入口：`scripts/Run-ObjectNetTests.ps1`（说明见 `docs/TESTING.md`）。

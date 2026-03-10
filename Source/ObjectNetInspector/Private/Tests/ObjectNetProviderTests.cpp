@@ -107,4 +107,83 @@ bool FObjectNetProviderFilteringAndAggregationTest::RunTest(const FString& Param
     return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FObjectNetProviderSearchFieldsTest,
+    "ObjectNetInspector.Provider.SearchFields",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FObjectNetProviderSearchFieldsTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+
+    FObjectNetProvider Provider;
+
+    Provider.GetReader().SetSessionReader(
+        [](TArray<FObjectNetEvent>& OutEvents)
+        {
+            OutEvents.Reset();
+
+            FObjectNetEvent PlayerEvent = MakeEvent(
+                1.0,
+                1,
+                1001,
+                TEXT("BP_PlayerCharacter_C_0"),
+                EObjectNetEventKind::Property,
+                EObjectNetDirection::Outgoing,
+                TEXT("ReplicatedMovementProperty"),
+                101,
+                128ull);
+            PlayerEvent.ObjectPath = TEXT("/Game/Maps/Arena.Arena:PersistentLevel.BP_PlayerCharacter_C_0");
+            PlayerEvent.ClassName = TEXT("BP_PlayerCharacter_C");
+            OutEvents.Add(MoveTemp(PlayerEvent));
+
+            FObjectNetEvent WeaponEvent = MakeEvent(
+                1.2,
+                1,
+                2002,
+                TEXT("BP_Rifle_C_3"),
+                EObjectNetEventKind::Rpc,
+                EObjectNetDirection::Outgoing,
+                TEXT("ServerFireRpc"),
+                102,
+                64ull);
+            WeaponEvent.ObjectPath = TEXT("/Game/Weapons/BP_Rifle.BP_Rifle_C_3");
+            WeaponEvent.ClassName = TEXT("BP_Rifle_C");
+            OutEvents.Add(MoveTemp(WeaponEvent));
+
+            return true;
+        });
+
+    Provider.Refresh();
+
+    FObjectNetQuery PathQuery;
+    PathQuery.SearchText = TEXT("PersistentLevel");
+    Provider.SetQuery(PathQuery);
+    TestEqual(TEXT("Path search should match one aggregate"), Provider.GetCurrentAggregates().Num(), 1);
+    if (Provider.GetCurrentAggregates().Num() == 1)
+    {
+        TestEqual(TEXT("Path search should match player object"), Provider.GetCurrentAggregates()[0].ObjectId, 1001ull);
+    }
+
+    FObjectNetQuery ClassQuery;
+    ClassQuery.SearchText = TEXT("BP_Rifle_C");
+    Provider.SetQuery(ClassQuery);
+    TestEqual(TEXT("Class search should match one aggregate"), Provider.GetCurrentAggregates().Num(), 1);
+    if (Provider.GetCurrentAggregates().Num() == 1)
+    {
+        TestEqual(TEXT("Class search should match rifle object"), Provider.GetCurrentAggregates()[0].ObjectId, 2002ull);
+    }
+
+    FObjectNetQuery EventQuery;
+    EventQuery.SearchText = TEXT("ServerFireRpc");
+    Provider.SetQuery(EventQuery);
+    TestEqual(TEXT("Event search should match one aggregate"), Provider.GetCurrentAggregates().Num(), 1);
+    if (Provider.GetCurrentAggregates().Num() == 1)
+    {
+        TestEqual(TEXT("Event search should match rifle object"), Provider.GetCurrentAggregates()[0].ObjectId, 2002ull);
+    }
+
+    return true;
+}
+
 #endif // WITH_DEV_AUTOMATION_TESTS

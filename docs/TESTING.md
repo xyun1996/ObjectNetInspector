@@ -8,6 +8,7 @@
 
 ## 2. 单测名称
 - `ObjectNetInspector.Provider.FilteringAndAggregation`
+- `ObjectNetInspector.Provider.SearchFields`
 - `ObjectNetInspector.Classifier.KindInference`
 - `ObjectNetInspector.MetadataParser.ObjectNamePath`
 

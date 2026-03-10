@@ -76,10 +76,34 @@ struct FObjectNetQuery
         if (!SearchText.IsEmpty())
         {
             const ESearchCase::Type SearchCase = ESearchCase::IgnoreCase;
-            const bool bTextMatch =
+            bool bTextMatch =
                 Aggregate.ObjectName.Contains(SearchText, SearchCase) ||
                 Aggregate.ObjectPath.Contains(SearchText, SearchCase) ||
                 Aggregate.ClassName.Contains(SearchText, SearchCase);
+
+            if (!bTextMatch)
+            {
+                for (const TPair<FString, uint32>& Pair : Aggregate.RpcCounts)
+                {
+                    if (Pair.Key.Contains(SearchText, SearchCase))
+                    {
+                        bTextMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!bTextMatch)
+            {
+                for (const TPair<FString, uint32>& Pair : Aggregate.PropertyCounts)
+                {
+                    if (Pair.Key.Contains(SearchText, SearchCase))
+                    {
+                        bTextMatch = true;
+                        break;
+                    }
+                }
+            }
 
             if (!bTextMatch)
             {

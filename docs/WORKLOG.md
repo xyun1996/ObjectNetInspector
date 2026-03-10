@@ -28,6 +28,7 @@
   - 已实现增强归因：`Kind` 多规则识别 + `Unknown` 回退，并输出 `TypeId` 作为 `ClassName` 回退值
 - 已新增最小自动化验证样例：
   - `ObjectNetInspector.Provider.FilteringAndAggregation`
+  - `ObjectNetInspector.Provider.SearchFields`
   - `ObjectNetInspector.Classifier.KindInference`
   - `ObjectNetInspector.MetadataParser.ObjectNamePath`
 - 该自动化样例已在 UE5.7 编辑器中执行成功（Success）
@@ -68,7 +69,8 @@
 - 在 UE5.7 下恢复真实事件映射链路（不再仅 session 元信息）。
 - 抽离 `FObjectNetMetadataParser`，统一对象名/路径解析，并新增类名启发式回退（用于真实 TypeName 不可用时）。
 - 扩展 `Kind` 分类词典（`RepLayout/PushModel/ChangeList/CallRemoteFunction` 等）并补充回归用例，降低 UE 常见命名下的 `Unknown`。
-- 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
+- 修复搜索过滤一致性问题：`SearchText` 在 aggregate 阶段也匹配事件名（`RpcCounts/PropertyCounts`），避免“按事件名搜索命中事件但被聚合过滤掉”。
+- 自动化测试 `ObjectNetInspector.Provider.FilteringAndAggregation`、`ObjectNetInspector.Provider.SearchFields`、`ObjectNetInspector.Classifier.KindInference`、`ObjectNetInspector.MetadataParser.ObjectNamePath` 运行结果：Success。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
