@@ -77,7 +77,11 @@
 - 为避免 CRLF/LF 混乱和误写入 `` `r`n `` 字面量，请遵循：
   - [docs/TEXT_HYGIENE_RULES.md](docs/TEXT_HYGIENE_RULES.md)
 
-## 10. UnrealInsights 打开方式（示例）
+## 10. UE5.7 排障文档
+- UnrealInsights/NetTrace 常见问题与解决步骤：
+  - [docs/UE57_TROUBLESHOOTING.md](docs/UE57_TROUBLESHOOTING.md)
+
+## 11. UnrealInsights 打开方式（示例）
 先确保 `UnrealInsights` 目标已编译一次（会产出 Program 侧插件模块）：
 
 ```powershell

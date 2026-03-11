@@ -76,19 +76,40 @@ function Resolve-TraceFile {
     )
 
     if (-not [string]::IsNullOrWhiteSpace($RequestedTraceFile)) {
-        if (-not (Test-Path $RequestedTraceFile)) {
-            throw "Trace file not found: $RequestedTraceFile"
+        if (-not (Test-Path -LiteralPath $RequestedTraceFile)) {
+            throw "Trace path not found: $RequestedTraceFile"
         }
 
-        return (Get-Item -LiteralPath $RequestedTraceFile).FullName
+        $requestedItem = Get-Item -LiteralPath $RequestedTraceFile
+        if ($requestedItem.PSIsContainer) {
+            $latestInRequestedDir = Get-ChildItem -LiteralPath $requestedItem.FullName -Filter *.utrace -File -Recurse |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+
+            if ($null -eq $latestInRequestedDir) {
+                throw "No .utrace file found under directory: $($requestedItem.FullName)"
+            }
+
+            return $latestInRequestedDir.FullName
+        }
+
+        if ($requestedItem.Extension -ne ".utrace") {
+            throw "Trace file must be a .utrace file, got: $($requestedItem.FullName)"
+        }
+
+        return $requestedItem.FullName
     }
 
-    $profilingDir = Join-Path $ProjectDir "Saved\Profiling"
-    if (-not (Test-Path $profilingDir)) {
+    $candidateDirs = @()
+    $candidateDirs += Join-Path $ProjectDir "Saved\Profiling"
+    $candidateDirs += Join-Path $env:LOCALAPPDATA "UnrealEngine\Common\UnrealTrace\Store"
+
+    $existingDirs = $candidateDirs | Where-Object { Test-Path -LiteralPath $_ }
+    if ($existingDirs.Count -eq 0) {
         return ""
     }
 
-    $latestTrace = Get-ChildItem -LiteralPath $profilingDir -Filter *.utrace -File -Recurse |
+    $latestTrace = Get-ChildItem -LiteralPath $existingDirs -Filter *.utrace -File -Recurse |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
 

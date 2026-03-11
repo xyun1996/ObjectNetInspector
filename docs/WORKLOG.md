@@ -1,6 +1,6 @@
 # WORKLOG - ObjectNetInspector
 
-更新时间：2026-03-10（Asia/Shanghai）
+更新时间：2026-03-11（Asia/Shanghai）
 
 ## 1. 项目目标（MVP）
 在 Unreal Insights 中提供对象级网络分析面板：
@@ -133,6 +133,12 @@
   - `Lyra.uproject` 增加 `ObjectNetInspector` 启用项；脚本默认追加 `-EnablePlugins=ObjectNetInspector`，并保留 `Lyra.uproject` 启用项作为双保险
 - 解决“插件已加载但菜单不可见”的 Program 侧体验问题：在 UnrealInsights 路径启动时自动 `TryInvokeTab(ObjectNetInspector.MainTab)`，确保面板可见。
 - 修复 `Launch-UnrealInsights.ps1` 参数拼接：`-project/-OpenTraceFile` 改为无额外引号格式，避免 Program 启动时项目路径未生效导致“仅搜索 Engine 插件目录”问题。
+- 新增 UE5.7 排障沉淀文档：`docs/UE57_TROUBLESHOOTING.md`，覆盖以下实战问题与方案：
+  - 插件模块找不到（Program DLL 缺失 / `-project` 未生效）
+  - Insights 菜单不可见（Program 侧自动拉起 Tab）
+  - `Networking Insights` 灰色与 `Object Net Inspector` 0 events（需执行 `NetTrace.SetTraceVerbosity 1`）
+  - 旧依赖与 UE5.7 API 变更导致的编译失败（`TraceInsights/NetworkingInsights/ReadPacket/OnSort`）
+  - 启动脚本 `-TraceFile` 参数增强（文件/目录均可传，目录自动选最新 `.utrace`）
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
