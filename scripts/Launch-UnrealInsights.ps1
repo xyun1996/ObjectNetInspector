@@ -136,6 +136,7 @@ if ($BuildInsights) {
 
 $args = @()
 $args += "-project=""$uprojectPath"""
+$args += "-EnablePlugins=ObjectNetInspector"
 
 if (-not [string]::IsNullOrWhiteSpace($resolvedTraceFile)) {
     $args += "-OpenTraceFile=""$resolvedTraceFile"""
@@ -150,10 +151,6 @@ if ($AutoQuit.IsPresent) {
 
 if ($DisableOtherPlugins.IsPresent) {
     $args += "-DisableAllPlugins"
-    $args += "-EnablePlugins=ObjectNetInspector"
-}
-elseif ($ForceEnablePluginArg.IsPresent) {
-    $args += "-EnablePlugins=ObjectNetInspector"
 }
 
 $args += "-log"

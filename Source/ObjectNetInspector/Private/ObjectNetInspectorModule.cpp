@@ -42,6 +42,18 @@ public:
 #if WITH_EDITOR
         UToolMenus::RegisterStartupCallback(
             FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FObjectNetInspectorModule::RegisterMenus));
+#else
+        // UnrealInsights program path does not expose LevelEditor menu extensions.
+        // Auto-open once so users can verify the panel without relying on menu wiring.
+        const TSharedPtr<SDockTab> OpenedTab = FGlobalTabmanager::Get()->TryInvokeTab(ObjectNetInspectorTabId);
+        if (OpenedTab.IsValid())
+        {
+            UE_LOG(LogObjectNetInspector, Log, TEXT("ObjectNetInspector tab auto-opened for UnrealInsights."));
+        }
+        else
+        {
+            UE_LOG(LogObjectNetInspector, Warning, TEXT("ObjectNetInspector tab failed to auto-open in UnrealInsights."));
+        }
 #endif
     }
 

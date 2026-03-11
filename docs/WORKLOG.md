@@ -130,7 +130,8 @@
   - 确认 Program 侧二进制必须存在：`UnrealInsights-ObjectNetInspector.dll`
   - 构建命令补充 `-EnablePlugins=ObjectNetInspector`
   - `Launch-UnrealInsights.ps1` 增加启动前 DLL 预检与明确报错提示
-  - `Lyra.uproject` 增加 `ObjectNetInspector` 启用项；脚本新增 `-ForceEnablePluginArg` 以支持命令行强制启用模式
+  - `Lyra.uproject` 增加 `ObjectNetInspector` 启用项；脚本默认追加 `-EnablePlugins=ObjectNetInspector`，并保留 `Lyra.uproject` 启用项作为双保险
+- 解决“插件已加载但菜单不可见”的 Program 侧体验问题：在 UnrealInsights 路径启动时自动 `TryInvokeTab(ObjectNetInspector.MainTab)`，确保面板可见。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。
@@ -154,3 +155,4 @@
 5. 回归与文档
    - Editor 自动化测试必须保持全绿。
    - 补充 README/TESTING 的 Insights 启动与验证步骤。
+
