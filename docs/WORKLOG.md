@@ -139,18 +139,18 @@
 目标：让 `Object Net Inspector` 在 `UnrealInsights.exe` 中作为 Insights 扩展面板运行，并读取 active session（不再依赖 Editor 进程内回落）。
 
 阶段计划：
-1. 模块形态切换  
-   - `uplugin` 调整为 `EditorAndProgram`，限定 `ProgramAllowList=UnrealInsights`。  
+1. 模块形态切换
+   - `uplugin` 调整为 `EditorAndProgram`，限定 `ProgramAllowList=UnrealInsights`。
    - 保留 Editor 路径，确保现有项目工作流不回归。
-2. 依赖分层  
-   - `Build.cs` 按 `Editor` / `Program` 条件裁剪依赖。  
+2. 依赖分层
+   - `Build.cs` 按 `Editor` / `Program` 条件裁剪依赖。
    - Editor 专属依赖（`ToolMenus`、`EditorStyle` 等）不进入 Program 构建链。
-3. Tab 与菜单策略  
-   - 保留通用 Tab 注册（Insights/Editor 均可用）。  
+3. Tab 与菜单策略
+   - 保留通用 Tab 注册（Insights/Editor 均可用）。
    - Editor 独有 `Window` 菜单入口做编译期守卫；Insights 侧依赖 Workspace/Nomad 入口。
-4. 会话读取验证  
-   - 在 `UnrealInsights.exe` 打开 `.utrace` 验证 `Source: Session`。  
+4. 会话读取验证
+   - 在 `UnrealInsights.exe` 打开 `.utrace` 验证 `Source: Session`。
    - 会话不可得时仍保持 mock fallback（`Source: Mock`）与日志告警。
-5. 回归与文档  
-   - Editor 自动化测试必须保持全绿。  
+5. 回归与文档
+   - Editor 自动化测试必须保持全绿。
    - 补充 README/TESTING 的 Insights 启动与验证步骤。
