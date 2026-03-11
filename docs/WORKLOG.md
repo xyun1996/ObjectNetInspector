@@ -139,6 +139,12 @@
   - `Networking Insights` 灰色与 `Object Net Inspector` 0 events（需执行 `NetTrace.SetTraceVerbosity 1`）
   - 旧依赖与 UE5.7 API 变更导致的编译失败（`TraceInsights/NetworkingInsights/ReadPacket/OnSort`）
   - 启动脚本 `-TraceFile` 参数增强（文件/目录均可传，目录自动选最新 `.utrace`）
+- 新增 Provider 回归用例：`ObjectNetInspector.Provider.FilterEdgeCases`
+  - 覆盖 Outgoing 方向过滤、时间窗边界、类型开关全关返回 0 行但源事件计数保持不变。
+  - 目标是防止“数据源有事件但筛选链路误判/崩溃”的回归。
+- 自动化验证（2026-03-11 12:54 CST）：
+  - `ObjectNetInspector.Provider.FilterEdgeCases` -> Success（1/1，failed=0）。
+- 测试脚本健壮性改进：`Run-ObjectNetTests.ps1` 在清理插件目录失败（常见 DLL 占用）时改为 Warning 并继续覆盖同步，减少误报红字干扰。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

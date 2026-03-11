@@ -87,7 +87,12 @@ Write-Host "Destination: $destinationPluginRoot"
 New-Item -ItemType Directory -Path $destinationPluginsDir -Force | Out-Null
 
 if ((Test-Path $destinationPluginRoot) -and (-not $SkipBuild)) {
-    Remove-Item -LiteralPath $destinationPluginRoot -Recurse -Force
+    try {
+        Remove-Item -LiteralPath $destinationPluginRoot -Recurse -Force -ErrorAction Stop
+    }
+    catch {
+        Write-Warning "Failed to fully clean plugin directory (likely file lock). Continuing with in-place sync. Path: $destinationPluginRoot"
+    }
 }
 
 New-Item -ItemType Directory -Path $destinationPluginRoot -Force | Out-Null

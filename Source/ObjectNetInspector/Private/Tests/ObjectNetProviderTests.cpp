@@ -192,4 +192,57 @@ bool FObjectNetProviderSearchFieldsTest::RunTest(const FString& Parameters)
     return true;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FObjectNetProviderFilterEdgeCasesTest,
+    "ObjectNetInspector.Provider.FilterEdgeCases",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FObjectNetProviderFilterEdgeCasesTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+
+    FObjectNetProvider Provider;
+
+    Provider.GetReader().SetSessionReader(
+        [](TArray<FObjectNetEvent>& OutEvents)
+        {
+            OutEvents.Reset();
+            OutEvents.Add(MakeEvent(1.0, 1, 1001, TEXT("ObjA"), EObjectNetEventKind::Rpc, EObjectNetDirection::Outgoing, TEXT("ServerDoThingRpc"), 101, 128ull));
+            OutEvents.Add(MakeEvent(2.0, 1, 1001, TEXT("ObjA"), EObjectNetEventKind::Property, EObjectNetDirection::Incoming, TEXT("HealthProperty"), 102, 64ull));
+            OutEvents.Add(MakeEvent(3.0, 2, 2002, TEXT("ObjB"), EObjectNetEventKind::Property, EObjectNetDirection::Outgoing, TEXT("AmmoProperty"), 201, 32ull));
+            return true;
+        });
+
+    Provider.Refresh();
+
+    TestEqual(TEXT("Session reader event count should stay non-zero"), Provider.GetLastEventCount(), 3);
+    TestEqual(TEXT("Default query should include two objects"), Provider.GetCurrentAggregates().Num(), 2);
+
+    FObjectNetQuery OutgoingOnly;
+    OutgoingOnly.DirectionFilter = EObjectNetDirection::Outgoing;
+    Provider.SetQuery(OutgoingOnly);
+    TestEqual(TEXT("Outgoing-only should keep two objects"), Provider.GetCurrentAggregates().Num(), 2);
+
+    FObjectNetQuery TimeWindow;
+    TimeWindow.TimeStartSec = 1.5;
+    TimeWindow.TimeEndSec = 2.5;
+    Provider.SetQuery(TimeWindow);
+    TestEqual(TEXT("Time-window [1.5,2.5] should keep one object"), Provider.GetCurrentAggregates().Num(), 1);
+    if (Provider.GetCurrentAggregates().Num() == 1)
+    {
+        const FObjectNetAggregate& Aggregate = Provider.GetCurrentAggregates()[0];
+        TestEqual(TEXT("Time-window object id"), Aggregate.ObjectId, 1001ull);
+        TestEqual(TEXT("Time-window event count"), Aggregate.TotalEventCount, 1u);
+    }
+
+    FObjectNetQuery DisabledKinds;
+    DisabledKinds.bIncludeRpc = false;
+    DisabledKinds.bIncludeProperties = false;
+    Provider.SetQuery(DisabledKinds);
+    TestEqual(TEXT("Both kind toggles off should return zero rows"), Provider.GetCurrentAggregates().Num(), 0);
+    TestEqual(TEXT("Total source event count should remain unchanged"), Provider.GetLastEventCount(), 3);
+
+    return true;
+}
+
 #endif // WITH_DEV_AUTOMATION_TESTS

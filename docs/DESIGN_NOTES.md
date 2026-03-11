@@ -1,6 +1,6 @@
 # DESIGN NOTES - ObjectNetInspector
 
-更新时间：2026-03-10（Asia/Shanghai）
+更新时间：2026-03-11（Asia/Shanghai）
 
 ## 1. 目标与边界
 - 目标：在 Unreal Insights 中提供“对象级”网络事件分析视角，支持按对象快速定位高频 RPC/属性同步热点。
@@ -100,3 +100,22 @@
   - `LyraEditor` 自动化测试保持全绿
   - `UnrealInsights` Program 目标可成功编译，并产出 `UnrealInsights-ObjectNetInspector.dll`
   - 运行日志可见插件挂载与模块启动日志
+
+## 11. 回归测试策略补充（2026-03-11）
+- 新增用例：`ObjectNetInspector.Provider.FilterEdgeCases`
+  - 设计目的：覆盖“有源数据但筛选后可为空”的稳定性场景，避免后续出现“0 结果即异常”类回归。
+  - 覆盖点：
+    - 方向过滤（Outgoing Only）
+    - 时间窗边界过滤（`TimeStartSec/TimeEndSec`）
+    - `bIncludeRpc=false && bIncludeProperties=false` 时应返回 0 行，但 Provider 的源事件计数保持不变
+- 取舍说明：
+  - 该测试不依赖真实会话，保持快速与稳定；真实链路验证仍通过脚本化自动化在 Lyra 工程中执行。
+  - 目标是优先保护 Provider 行为契约，而非重复覆盖 bridge 的会话映射细节。
+
+## 12. 测试脚本健壮性补充（2026-03-11）
+- 问题背景：自动化前同步插件目录时，若 DLL 被占用，`Remove-Item` 会抛红色错误噪声。
+- 方案：
+  - `scripts/Run-ObjectNetTests.ps1` 对目录清理改为 `try/catch`。
+  - 清理失败仅输出 Warning，并继续执行“覆盖拷贝 + 构建/测试”流程。
+- 设计理由：
+  - 在多实例编辑器/Insights 并行开发场景下，文件锁是常态，不应把可恢复场景当作硬失败。
