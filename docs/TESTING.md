@@ -111,4 +111,3 @@ pwsh -File .\scripts\Launch-UnrealInsights.ps1
 - `-AutoQuit`：打开并自动退出（适合脚本验证）
 - `-DisableOtherPlugins`：仅启用 ObjectNetInspector（排查插件冲突）
 - 脚本默认会追加 `-EnablePlugins=ObjectNetInspector`，避免 Program 路径插件启用状态不稳定。
-

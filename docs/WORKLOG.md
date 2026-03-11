@@ -155,4 +155,3 @@
 5. 回归与文档
    - Editor 自动化测试必须保持全绿。
    - 补充 README/TESTING 的 Insights 启动与验证步骤。
-
