@@ -191,4 +191,3 @@ if (-not (Test-Path $insightsPluginDllPath)) {
 
 & $insightsExe @args
 exit $LASTEXITCODE
-
