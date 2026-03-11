@@ -132,6 +132,7 @@
   - `Launch-UnrealInsights.ps1` 增加启动前 DLL 预检与明确报错提示
   - `Lyra.uproject` 增加 `ObjectNetInspector` 启用项；脚本默认追加 `-EnablePlugins=ObjectNetInspector`，并保留 `Lyra.uproject` 启用项作为双保险
 - 解决“插件已加载但菜单不可见”的 Program 侧体验问题：在 UnrealInsights 路径启动时自动 `TryInvokeTab(ObjectNetInspector.MainTab)`，确保面板可见。
+- 修复 `Launch-UnrealInsights.ps1` 参数拼接：`-project/-OpenTraceFile` 改为无额外引号格式，避免 Program 启动时项目路径未生效导致“仅搜索 Engine 插件目录”问题。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

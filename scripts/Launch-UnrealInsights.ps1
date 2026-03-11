@@ -135,11 +135,11 @@ if ($BuildInsights) {
 }
 
 $args = @()
-$args += "-project=""$uprojectPath"""
+$args += "-project=$uprojectPath"
 $args += "-EnablePlugins=ObjectNetInspector"
 
 if (-not [string]::IsNullOrWhiteSpace($resolvedTraceFile)) {
-    $args += "-OpenTraceFile=""$resolvedTraceFile"""
+    $args += "-OpenTraceFile=$resolvedTraceFile"
 }
 else {
     Write-Host "No trace file provided/found. UnrealInsights will open without an initial trace."
