@@ -124,6 +124,21 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::Property));
 
     TestEqual(
+        TEXT("Content block header should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ContentBlockHeader"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
+        TEXT("Property handle should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("PropertyHandle"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
+        TEXT("Packet header metadata should map to PacketRef"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("PacketHeaderAndInfo"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::PacketRef));
+
+    TestEqual(
         TEXT("Ambiguous rpc+rep mix should stay Unknown"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ServerRepFunction"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Unknown));
@@ -160,7 +175,10 @@ bool FObjectNetEventClassifierQualityGuardTest::RunTest(const FString& Parameter
         { TEXT("FastArraySerializerDelta"), EObjectNetEventKind::Property },
         { TEXT("IrisStateBufferChangeMask"), EObjectNetEventKind::Property },
         { TEXT("WriteObjectNetField"), EObjectNetEventKind::Property },
+        { TEXT("ContentBlockHeader"), EObjectNetEventKind::Property },
+        { TEXT("PropertyHandle"), EObjectNetEventKind::Property },
         { TEXT("ChannelBunchPacket"), EObjectNetEventKind::PacketRef },
+        { TEXT("PacketHeaderAndInfo"), EObjectNetEventKind::PacketRef },
         { TEXT("PacketDeliveryStatus"), EObjectNetEventKind::PacketRef },
         { TEXT("BuildFunctionTable"), EObjectNetEventKind::Unknown },
         { TEXT("RemoteHandle"), EObjectNetEventKind::Unknown },

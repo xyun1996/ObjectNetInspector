@@ -51,6 +51,7 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
     static const FWeightedTerm PropertyTerms[] =
     {
         { TEXT("property"), 4 },
+        { TEXT("propertyhandle"), 3 },
         { TEXT("replication"), 3 },
         { TEXT("replayout"), 3 },
         { TEXT("repstate"), 3 },
@@ -82,13 +83,19 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("repindex"), 2 },
         { TEXT("changemask"), 2 },
         { TEXT("basestate"), 2 },
-        { TEXT("dirty"), 1 }
+        { TEXT("dirty"), 1 },
+        { TEXT("contentblockheader"), 3 },
+        { TEXT("fieldheader"), 2 },
+        { TEXT("packedbits"), 2 }
     };
 
     static const FWeightedTerm PacketTerms[] =
     {
         { TEXT("packet"), 3 },
+        { TEXT("packetheader"), 2 },
+        { TEXT("packetheaderandinfo"), 3 },
         { TEXT("bunch"), 3 },
+        { TEXT("bunchheader"), 3 },
         { TEXT("ack"), 2 },
         { TEXT("nack"), 2 },
         { TEXT("header"), 1 },
@@ -97,7 +104,8 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("netpacket"), 3 },
         { TEXT("packetsize"), 2 },
         { TEXT("sequencenumber"), 2 },
-        { TEXT("deliverystatus"), 2 }
+        { TEXT("deliverystatus"), 2 },
+        { TEXT("mustbemappedguids"), 2 }
     };
 
     int32 RpcScore = ComputeScore(EventName, RpcTerms, UE_ARRAY_COUNT(RpcTerms));

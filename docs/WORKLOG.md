@@ -59,9 +59,9 @@
   - `Source/ObjectNetInspector/Private/Tests/ObjectNetMetadataParserTests.cpp`
 
 ## 5. 下一步任务
-1. 基于分类器与回归测试继续提升 `Kind` 归因准确率（减少 `Unknown` 与误判）
-2. 若 UE API 可提供，补充对象真实 `ClassName`（目前已增加对象名启发式回退，仍优先真实 API）
-3. Tab 挂载已加编译期守卫（有 Workspace API 则挂 Profiling，否则回退 Nomad）
+1. 基于真实样本继续补充分类词典，持续降低 `Unknown%`（当前已覆盖 `ContentBlockHeader/PropertyHandle/PacketHeaderAndInfo`）
+2. 跟踪 UE 后续 API：UE5.7 `FNetProfilerObjectInstance` 仅暴露 `NameIndex/TypeId`，暂不提供稳定 `ObjectPath/ClassPath` 字段，当前保持“TypeName + 推断 + TypeId 回退”链路
+3. 做跨版本验证（5.6/5.7）确认 Workspace 挂载与 Program 侧自动拉起 Tab 行为一致
 
 ## 6. 今天新增进展（2026-03-10）
 - `Kind` 归因规则升级为“加权评分 + 冲突回退”，降低 server/client 字样导致的 RPC 误判，并新增边界回归用例。
@@ -175,6 +175,12 @@
   - Provider 增加视图缓存与 `ViewRevision` 版本号，`SetQuery` 不再触发全量会话重读，仅重建筛选结果。
   - EventTable/ObjectList 的 `Tick` 从“全量指纹重算”改为“版本号变化检测”，避免大对象选中时每帧扫描全事件。
   - 自动化回归：`ObjectNetInspector.` 全部 Success（6/6，failed=0）。
+- 交互联动与归因补充（2026-03-11 16:10 CST）：
+  - Toolbar 新增 `Networking` 按钮：一键 `TryInvokeTab("NetworkingProfiler")` 打开 Networking Insights（存在 tab spawner 时可用）。
+  - `Kind` 分类补充真实样本高频词：
+    - Property：`contentblockheader/propertyhandle/fieldheader/packedbits`
+    - PacketRef：`packetheader/packetheaderandinfo/bunchheader/mustbemappedguids`
+  - 新增自动化断言覆盖 `ContentBlockHeader`、`PropertyHandle`、`PacketHeaderAndInfo`，防止后续词典回退导致 `Unknown%` 反弹。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

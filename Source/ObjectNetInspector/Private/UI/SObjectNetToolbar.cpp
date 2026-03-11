@@ -1,5 +1,6 @@
 #include "ObjectNetProvider.h"
 
+#include "Framework/Docking/TabManager.h"
 #include "Misc/DefaultValueHelper.h"
 #include "Styling/SlateColor.h"
 #include "Widgets/SCompoundWidget.h"
@@ -50,6 +51,17 @@ public:
                     SNew(STextBlock)
                     .ColorAndOpacity(this, &SObjectNetToolbar::GetDataSourceColor)
                     .Text(this, &SObjectNetToolbar::GetDataSourceText)
+                ]
+
+                + SHorizontalBox::Slot()
+                .AutoWidth()
+                .Padding(8.0f, 0.0f, 0.0f, 0.0f)
+                [
+                    SNew(SButton)
+                    .Text(FText::FromString(TEXT("Networking")))
+                    .IsEnabled(this, &SObjectNetToolbar::IsNetworkingInsightsAvailable)
+                    .OnClicked(this, &SObjectNetToolbar::OnOpenNetworkingInsightsClicked)
+                    .ToolTipText(FText::FromString(TEXT("Open Networking Insights tab")))
                 ]
 
                 + SHorizontalBox::Slot()
@@ -305,6 +317,19 @@ private:
     FReply OnRefreshClicked()
     {
         Provider->Refresh();
+        return FReply::Handled();
+    }
+
+    bool IsNetworkingInsightsAvailable() const
+    {
+        static const FName NetworkingProfilerTabId(TEXT("NetworkingProfiler"));
+        return FGlobalTabmanager::Get()->HasTabSpawner(NetworkingProfilerTabId);
+    }
+
+    FReply OnOpenNetworkingInsightsClicked()
+    {
+        static const FName NetworkingProfilerTabId(TEXT("NetworkingProfiler"));
+        FGlobalTabmanager::Get()->TryInvokeTab(NetworkingProfilerTabId);
         return FReply::Handled();
     }
 

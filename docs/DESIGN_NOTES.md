@@ -63,9 +63,9 @@
 - 标准执行入口：`scripts/Run-ObjectNetTests.ps1`（说明见 `docs/TESTING.md`）。
 
 ## 7. 当前剩余工作
-1. 继续提升 `Kind` 归因准确率（降低 Unknown 与误判）
-2. 接入真实 `ClassName/ObjectPath`（若 provider 可提供）
-3. 已在 UE5.7 接入 Workspace Profiling 分类，后续做跨版本验证
+1. 继续基于真实样本迭代 `Kind` 词典（当前已覆盖 `ContentBlockHeader/PropertyHandle/PacketHeaderAndInfo`）
+2. 跟踪 UE API 演进：UE5.7 `FNetProfilerObjectInstance` 仅有 `NameIndex/TypeId`，暂无稳定 `ObjectPath/ClassPath` 字段，现阶段保持推断回退链路
+3. 已在 UE5.7 接入 Workspace Profiling 分类，后续做 5.6/5.7 跨版本验证
 
 ## 8. 文档维护约定
 - 每次做结构性改动（接口、口径、流程、取舍）时，同步更新本文件。
@@ -149,3 +149,15 @@
   - 对低置信 `ClassName`（如单字符/`None`/`Pending`）不直接采信，继续走事件作用域或 TypeId 回退链路。
 - 结果：
   - 避免大量无意义 `A` 行，提升对象列表排查效率。
+
+## 16. 工具栏联动与归因词典补充（2026-03-11）
+- Toolbar 增加 `Networking` 按钮：
+  - 行为：调用 `FGlobalTabmanager::TryInvokeTab("NetworkingProfiler")`。
+  - 约束：仅在 `HasTabSpawner("NetworkingProfiler")` 时可点击，避免无效交互。
+- 设计动机：
+  - Object 面板常用于定位对象热点，下一步通常需要切到 Networking Insights 对包/连接时序做横向核对；按钮将这一步变为单击操作。
+- 归因词典补充（来自真实 trace 高频项）：
+  - Property：`contentblockheader`、`propertyhandle`、`fieldheader`、`packedbits`
+  - PacketRef：`packetheader`、`packetheaderandinfo`、`bunchheader`、`mustbemappedguids`
+- 回归保护：
+  - 自动化新增断言：`ContentBlockHeader -> Property`、`PropertyHandle -> Property`、`PacketHeaderAndInfo -> PacketRef`。
