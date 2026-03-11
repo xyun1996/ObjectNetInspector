@@ -2,7 +2,9 @@
 
 #include "Framework/Docking/TabManager.h"
 #include "Misc/DefaultValueHelper.h"
+#include "Modules/ModuleManager.h"
 #include "Styling/SlateColor.h"
+#include "Widgets/Docking/SDockTab.h"
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SCheckBox.h"
@@ -10,6 +12,7 @@
 #include "Widgets/Input/SSearchBox.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/SWindow.h"
 #include "Widgets/Text/STextBlock.h"
 
 class SObjectNetToolbar : public SCompoundWidget
@@ -329,7 +332,36 @@ private:
     FReply OnOpenNetworkingInsightsClicked()
     {
         static const FName NetworkingProfilerTabId(TEXT("NetworkingProfiler"));
-        FGlobalTabmanager::Get()->TryInvokeTab(NetworkingProfilerTabId);
+
+        if (!FGlobalTabmanager::Get()->HasTabSpawner(NetworkingProfilerTabId))
+        {
+            FModuleManager::LoadModulePtr<IModuleInterface>(TEXT("TraceInsights"));
+            FModuleManager::LoadModulePtr<IModuleInterface>(TEXT("NetworkingInsights"));
+        }
+
+        auto FocusOpenedTab = [](const TSharedPtr<SDockTab>& Tab)
+        {
+            if (!Tab.IsValid())
+            {
+                return;
+            }
+
+            Tab->ActivateInParent(ETabActivationCause::SetDirectly);
+            Tab->DrawAttention();
+
+            if (const TSharedPtr<SWindow> ParentWindow = Tab->GetParentWindow(); ParentWindow.IsValid())
+            {
+                ParentWindow->BringToFront(true);
+            }
+        };
+
+        TSharedPtr<SDockTab> TargetTab = FGlobalTabmanager::Get()->FindExistingLiveTab(NetworkingProfilerTabId);
+        if (!TargetTab.IsValid())
+        {
+            TargetTab = FGlobalTabmanager::Get()->TryInvokeTab(NetworkingProfilerTabId);
+        }
+        FocusOpenedTab(TargetTab);
+
         return FReply::Handled();
     }
 
