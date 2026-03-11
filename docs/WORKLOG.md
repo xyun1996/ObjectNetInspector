@@ -126,6 +126,10 @@
   - 日志确认：`ObjectNetInspector module started and tab spawner registered.`
 - Editor 回归验证（2026-03-10 22:29 CST）：
   - `pwsh -File .\scripts\Run-ObjectNetTests.ps1` -> Success（4/4，failed=0）
+- 解决 UnrealInsights 插件加载报错（`module 'ObjectNetInspector' could not be found`）：
+  - 确认 Program 侧二进制必须存在：`UnrealInsights-ObjectNetInspector.dll`
+  - 构建命令补充 `-EnablePlugins=ObjectNetInspector`
+  - `Launch-UnrealInsights.ps1` 增加启动前 DLL 预检与明确报错提示
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

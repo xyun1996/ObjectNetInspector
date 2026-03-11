@@ -126,7 +126,7 @@ if ($SyncPlugin) {
 
 if ($BuildInsights) {
     Write-Host "Building UnrealInsights Win64 Development..."
-    & $buildBat UnrealInsights Win64 Development -Project="$uprojectPath" -WaitMutex -FromMsBuild
+    & $buildBat UnrealInsights Win64 Development -Project="$uprojectPath" -EnablePlugins=ObjectNetInspector -WaitMutex -FromMsBuild
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed for UnrealInsights (exit code $LASTEXITCODE)."
     }
@@ -160,6 +160,11 @@ if (-not [string]::IsNullOrWhiteSpace($resolvedTraceFile)) {
     Write-Host "Trace: $resolvedTraceFile"
 }
 Write-Host "Args: $($args -join ' ')"
+
+$insightsPluginDllPath = Join-Path $destinationPluginRoot "Binaries\\Win64\\UnrealInsights-ObjectNetInspector.dll"
+if (-not (Test-Path $insightsPluginDllPath)) {
+    throw "Missing Program plugin binary: $insightsPluginDllPath. Build UnrealInsights once with -BuildInsights:`$true (or run Build.bat with -EnablePlugins=ObjectNetInspector)."
+}
 
 & $insightsExe @args
 exit $LASTEXITCODE

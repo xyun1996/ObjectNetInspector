@@ -84,6 +84,7 @@
 G:\workspace\repo\github\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
   UnrealInsights Win64 Development `
   -Project="G:\workspace\ue5\Lyra\Lyra.uproject" `
+  -EnablePlugins=ObjectNetInspector `
   -WaitMutex -FromMsBuild
 ```
 
