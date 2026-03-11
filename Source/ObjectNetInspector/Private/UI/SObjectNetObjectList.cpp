@@ -1,7 +1,6 @@
 #include "ObjectNetProvider.h"
 
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/SBoxPanel.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Views/SHeaderRow.h"
 #include "Widgets/Views/SListView.h"
@@ -23,7 +22,66 @@ enum class ESortColumn : uint8
     Properties,
     KnownBytes
 };
-}
+} // namespace ObjectNetObjectList
+
+class SObjectNetObjectListRow : public SMultiColumnTableRow<TSharedPtr<ObjectNetObjectList::FRowItem>>
+{
+public:
+    SLATE_BEGIN_ARGS(SObjectNetObjectListRow)
+    {
+    }
+        SLATE_ARGUMENT(TSharedPtr<ObjectNetObjectList::FRowItem>, Item)
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& InArgs, const TSharedRef<STableViewBase>& OwnerTable)
+    {
+        Item = InArgs._Item;
+        SMultiColumnTableRow<TSharedPtr<ObjectNetObjectList::FRowItem>>::Construct(
+            SMultiColumnTableRow<TSharedPtr<ObjectNetObjectList::FRowItem>>::FArguments(),
+            OwnerTable);
+    }
+
+    virtual TSharedRef<SWidget> GenerateWidgetForColumn(const FName& ColumnName) override
+    {
+        if (!Item.IsValid())
+        {
+            return SNew(STextBlock).Text(FText::GetEmpty());
+        }
+
+        const FObjectNetAggregate& Aggregate = Item->Aggregate;
+        const uint64 KnownBytes = (Aggregate.TotalKnownBits + 7ull) / 8ull;
+
+        if (ColumnName == TEXT("Name"))
+        {
+            return SNew(STextBlock).Text(FText::FromString(Aggregate.ObjectName));
+        }
+        if (ColumnName == TEXT("Class"))
+        {
+            return SNew(STextBlock).Text(FText::FromString(Aggregate.ClassName));
+        }
+        if (ColumnName == TEXT("Events"))
+        {
+            return SNew(STextBlock).Justification(ETextJustify::Right).Text(FText::AsNumber(Aggregate.TotalEventCount));
+        }
+        if (ColumnName == TEXT("RPCs"))
+        {
+            return SNew(STextBlock).Justification(ETextJustify::Right).Text(FText::AsNumber(Aggregate.RpcCount));
+        }
+        if (ColumnName == TEXT("Props"))
+        {
+            return SNew(STextBlock).Justification(ETextJustify::Right).Text(FText::AsNumber(Aggregate.PropertyCount));
+        }
+        if (ColumnName == TEXT("KnownBytes"))
+        {
+            return SNew(STextBlock).Justification(ETextJustify::Right).Text(FText::AsNumber(KnownBytes));
+        }
+
+        return SNew(STextBlock).Text(FText::GetEmpty());
+    }
+
+private:
+    TSharedPtr<ObjectNetObjectList::FRowItem> Item;
+};
 
 class SObjectNetObjectList : public SCompoundWidget
 {
@@ -38,9 +96,9 @@ public:
         Provider = InProvider;
         SortColumn = ObjectNetObjectList::ESortColumn::KnownBytes;
         SortMode = EColumnSortMode::Descending;
+        CachedRevision = Provider->GetViewRevision();
 
         RebuildRows();
-        CachedFingerprint = BuildFingerprint();
 
         ChildSlot
         [
@@ -54,34 +112,44 @@ public:
                 SNew(SHeaderRow)
 
                 + SHeaderRow::Column(TEXT("Name"))
-                .FillWidth(0.32f)
+                .FillWidth(0.36f)
                 .DefaultLabel(FText::FromString(TEXT("Name")))
                 .SortMode(this, &SObjectNetObjectList::GetSortModeForName)
                 .OnSort(this, &SObjectNetObjectList::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("Class"))
-                .FillWidth(0.24f)
+                .FillWidth(0.26f)
                 .DefaultLabel(FText::FromString(TEXT("Class")))
+                .SortMode(this, &SObjectNetObjectList::GetSortModeForClass)
+                .OnSort(this, &SObjectNetObjectList::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("Events"))
-                .FixedWidth(65.0f)
-                .HAlignCell(HAlign_Right)
-                .DefaultLabel(FText::FromString(TEXT("Events")))
-
-                + SHeaderRow::Column(TEXT("RPCs"))
-                .FixedWidth(65.0f)
-                .HAlignCell(HAlign_Right)
-                .DefaultLabel(FText::FromString(TEXT("RPCs")))
-
-                + SHeaderRow::Column(TEXT("Props"))
-                .FixedWidth(85.0f)
-                .HAlignCell(HAlign_Right)
-                .DefaultLabel(FText::FromString(TEXT("Properties")))
-
-                + SHeaderRow::Column(TEXT("KnownBytes"))
                 .FixedWidth(95.0f)
                 .HAlignCell(HAlign_Right)
+                .DefaultLabel(FText::FromString(TEXT("Events")))
+                .SortMode(this, &SObjectNetObjectList::GetSortModeForEvents)
+                .OnSort(this, &SObjectNetObjectList::OnSortRequested)
+
+                + SHeaderRow::Column(TEXT("RPCs"))
+                .FixedWidth(75.0f)
+                .HAlignCell(HAlign_Right)
+                .DefaultLabel(FText::FromString(TEXT("RPCs")))
+                .SortMode(this, &SObjectNetObjectList::GetSortModeForRpcs)
+                .OnSort(this, &SObjectNetObjectList::OnSortRequested)
+
+                + SHeaderRow::Column(TEXT("Props"))
+                .FixedWidth(90.0f)
+                .HAlignCell(HAlign_Right)
+                .DefaultLabel(FText::FromString(TEXT("Properties")))
+                .SortMode(this, &SObjectNetObjectList::GetSortModeForProperties)
+                .OnSort(this, &SObjectNetObjectList::OnSortRequested)
+
+                + SHeaderRow::Column(TEXT("KnownBytes"))
+                .FixedWidth(110.0f)
+                .HAlignCell(HAlign_Right)
                 .DefaultLabel(FText::FromString(TEXT("Known Bytes")))
+                .SortMode(this, &SObjectNetObjectList::GetSortModeForKnownBytes)
+                .OnSort(this, &SObjectNetObjectList::OnSortRequested)
             )
         ];
     }
@@ -90,31 +158,20 @@ public:
     {
         SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
 
-        const uint32 NewFingerprint = BuildFingerprint();
-        if (NewFingerprint != CachedFingerprint)
+        const uint64 NewRevision = Provider->GetViewRevision();
+        if (NewRevision != CachedRevision)
         {
-            CachedFingerprint = NewFingerprint;
+            CachedRevision = NewRevision;
             RebuildRows();
             ListView->RequestListRefresh();
         }
     }
 
 private:
-    uint32 BuildFingerprint() const
-    {
-        uint32 Fingerprint = 0;
-        for (const FObjectNetAggregate& Aggregate : Provider->GetCurrentAggregates())
-        {
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Aggregate.ObjectId));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Aggregate.TotalEventCount));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Aggregate.TotalKnownBits));
-        }
-        return Fingerprint;
-    }
-
     void RebuildRows()
     {
         Rows.Reset();
+        Rows.Reserve(Provider->GetCurrentAggregates().Num());
 
         for (const FObjectNetAggregate& Aggregate : Provider->GetCurrentAggregates())
         {
@@ -159,42 +216,7 @@ private:
 
     TSharedRef<ITableRow> OnGenerateRow(TSharedPtr<ObjectNetObjectList::FRowItem> Item, const TSharedRef<STableViewBase>& OwnerTable) const
     {
-        const uint64 KnownBytes = (Item->Aggregate.TotalKnownBits + 7ull) / 8ull;
-
-        return SNew(STableRow<TSharedPtr<ObjectNetObjectList::FRowItem>>, OwnerTable)
-            [
-                SNew(SHorizontalBox)
-
-                + SHorizontalBox::Slot().FillWidth(0.32f)
-                [
-                    SNew(STextBlock).Text(FText::FromString(Item->Aggregate.ObjectName))
-                ]
-
-                + SHorizontalBox::Slot().FillWidth(0.24f)
-                [
-                    SNew(STextBlock).Text(FText::FromString(Item->Aggregate.ClassName))
-                ]
-
-                + SHorizontalBox::Slot().FillWidth(0.11f)
-                [
-                    SNew(STextBlock).Text(FText::AsNumber(Item->Aggregate.TotalEventCount))
-                ]
-
-                + SHorizontalBox::Slot().FillWidth(0.11f)
-                [
-                    SNew(STextBlock).Text(FText::AsNumber(Item->Aggregate.RpcCount))
-                ]
-
-                + SHorizontalBox::Slot().FillWidth(0.12f)
-                [
-                    SNew(STextBlock).Text(FText::AsNumber(Item->Aggregate.PropertyCount))
-                ]
-
-                + SHorizontalBox::Slot().FillWidth(0.12f)
-                [
-                    SNew(STextBlock).Text(FText::AsNumber(KnownBytes))
-                ]
-            ];
+        return SNew(SObjectNetObjectListRow, OwnerTable).Item(Item);
     }
 
     void OnSelectionChanged(TSharedPtr<ObjectNetObjectList::FRowItem> Item, ESelectInfo::Type)
@@ -247,13 +269,38 @@ private:
         return (SortColumn == ObjectNetObjectList::ESortColumn::Name) ? SortMode : EColumnSortMode::None;
     }
 
+    EColumnSortMode::Type GetSortModeForClass() const
+    {
+        return (SortColumn == ObjectNetObjectList::ESortColumn::Class) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForEvents() const
+    {
+        return (SortColumn == ObjectNetObjectList::ESortColumn::Events) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForRpcs() const
+    {
+        return (SortColumn == ObjectNetObjectList::ESortColumn::Rpcs) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForProperties() const
+    {
+        return (SortColumn == ObjectNetObjectList::ESortColumn::Properties) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForKnownBytes() const
+    {
+        return (SortColumn == ObjectNetObjectList::ESortColumn::KnownBytes) ? SortMode : EColumnSortMode::None;
+    }
+
 private:
     TSharedPtr<FObjectNetProvider> Provider;
     TArray<TSharedPtr<ObjectNetObjectList::FRowItem>> Rows;
     TSharedPtr<SListView<TSharedPtr<ObjectNetObjectList::FRowItem>>> ListView;
     ObjectNetObjectList::ESortColumn SortColumn;
     EColumnSortMode::Type SortMode;
-    uint32 CachedFingerprint = 0;
+    uint64 CachedRevision = 0;
 };
 
 TSharedRef<SWidget> MakeObjectNetObjectListWidget(const TSharedRef<FObjectNetProvider>& Provider)

@@ -65,9 +65,9 @@ public:
         Provider = InProvider;
         SortColumn = ObjectNetEventTable::ESortColumn::Time;
         SortMode = EColumnSortMode::Ascending;
+        CachedRevision = Provider->GetViewRevision();
 
         RebuildRows();
-        CachedFingerprint = BuildFingerprint();
 
         ChildSlot
         [
@@ -116,34 +116,16 @@ public:
     {
         SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
 
-        const uint32 NewFingerprint = BuildFingerprint();
-        if (NewFingerprint != CachedFingerprint)
+        const uint64 NewRevision = Provider->GetViewRevision();
+        if (NewRevision != CachedRevision)
         {
-            CachedFingerprint = NewFingerprint;
+            CachedRevision = NewRevision;
             RebuildRows();
             ListView->RequestListRefresh();
         }
     }
 
 private:
-    uint32 BuildFingerprint() const
-    {
-        const TOptional<uint64> SelectedObjectId = Provider->GetSelectedObjectId();
-        uint32 Fingerprint = GetTypeHash(SelectedObjectId.IsSet() ? SelectedObjectId.GetValue() : 0ull);
-
-        const TArray<FObjectNetEvent> Events = Provider->GetSelectedObjectEvents();
-        for (const FObjectNetEvent& Event : Events)
-        {
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.TimeSec));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.ConnectionId));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.PacketId));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.EventName));
-            Fingerprint = HashCombine(Fingerprint, GetTypeHash(Event.BitCount.IsSet() ? Event.BitCount.GetValue() : 0ull));
-        }
-
-        return Fingerprint;
-    }
-
     void RebuildRows()
     {
         Rows.Reset();
@@ -271,7 +253,7 @@ private:
     TSharedPtr<SListView<TSharedPtr<ObjectNetEventTable::FRowItem>>> ListView;
     ObjectNetEventTable::ESortColumn SortColumn;
     EColumnSortMode::Type SortMode;
-    uint32 CachedFingerprint = 0;
+    uint64 CachedRevision = 0;
 };
 
 TSharedRef<SWidget> MakeObjectNetEventTableWidget(const TSharedRef<FObjectNetProvider>& Provider)

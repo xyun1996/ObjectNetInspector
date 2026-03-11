@@ -1,10 +1,13 @@
 #include "ObjectNetProvider.h"
 
 FObjectNetProvider::FObjectNetProvider()
-    : LastDataSourceKind(EObjectNetDataSourceKind::Unknown)
+    : bSelectedAggregateCacheValid(false)
+    , bSelectedEventsCacheValid(false)
+    , LastDataSourceKind(EObjectNetDataSourceKind::Unknown)
     , LastEventCount(0)
     , LastUnknownEventCount(0)
     , LastPacketRefEventCount(0)
+    , ViewRevision(0)
 {
 }
 
@@ -22,6 +25,8 @@ void FObjectNetProvider::Refresh()
     }
 
     Analyzer.Rebuild(TraceReader.GetEvents());
+    InvalidateSelectionCaches();
+
     LastEventCount = Analyzer.GetEvents().Num();
     LastUnknownEventCount = 0;
     LastPacketRefEventCount = 0;
@@ -36,26 +41,14 @@ void FObjectNetProvider::Refresh()
             ++LastPacketRefEventCount;
         }
     }
-    CurrentAggregates = Aggregator.BuildAggregates(Analyzer, CurrentQuery);
 
-    if (SelectedObjectId.IsSet())
-    {
-        const TOptional<FObjectNetAggregate> SelectedAggregate = Aggregator.BuildAggregateForObject(
-            SelectedObjectId.GetValue(),
-            Analyzer,
-            CurrentQuery);
-
-        if (!SelectedAggregate.IsSet())
-        {
-            SelectedObjectId.Reset();
-        }
-    }
+    RebuildViewState();
 }
 
 void FObjectNetProvider::SetQuery(const FObjectNetQuery& InQuery)
 {
     CurrentQuery = InQuery;
-    Refresh();
+    RebuildViewState();
 }
 
 const FObjectNetQuery& FObjectNetProvider::GetQuery() const
@@ -65,7 +58,14 @@ const FObjectNetQuery& FObjectNetProvider::GetQuery() const
 
 void FObjectNetProvider::SetSelectedObjectId(const TOptional<uint64> InObjectId)
 {
+    if (SelectedObjectId == InObjectId)
+    {
+        return;
+    }
+
     SelectedObjectId = InObjectId;
+    InvalidateSelectionCaches();
+    ++ViewRevision;
 }
 
 TOptional<uint64> FObjectNetProvider::GetSelectedObjectId() const
@@ -85,38 +85,48 @@ TOptional<FObjectNetAggregate> FObjectNetProvider::GetSelectedAggregate() const
         return TOptional<FObjectNetAggregate>();
     }
 
-    return Aggregator.BuildAggregateForObject(SelectedObjectId.GetValue(), Analyzer, CurrentQuery);
+    if (!bSelectedAggregateCacheValid)
+    {
+        CachedSelectedAggregate = Aggregator.BuildAggregateForObject(SelectedObjectId.GetValue(), Analyzer, CurrentQuery);
+        bSelectedAggregateCacheValid = true;
+    }
+
+    return CachedSelectedAggregate;
 }
 
 TArray<FObjectNetEvent> FObjectNetProvider::GetSelectedObjectEvents() const
 {
-    TArray<FObjectNetEvent> FilteredEvents;
     if (!SelectedObjectId.IsSet())
     {
-        return FilteredEvents;
+        return TArray<FObjectNetEvent>();
     }
 
-    const TArray<FObjectNetEvent>* SourceEvents = Analyzer.FindEventsByObjectId(SelectedObjectId.GetValue());
-    if (SourceEvents == nullptr)
+    if (!bSelectedEventsCacheValid)
     {
-        return FilteredEvents;
-    }
+        CachedSelectedEvents.Reset();
 
-    FilteredEvents.Reserve(SourceEvents->Num());
-    for (const FObjectNetEvent& Event : *SourceEvents)
-    {
-        if (CurrentQuery.PassesEvent(Event))
+        const TArray<FObjectNetEvent>* SourceEvents = Analyzer.FindEventsByObjectId(SelectedObjectId.GetValue());
+        if (SourceEvents != nullptr)
         {
-            FilteredEvents.Add(Event);
+            CachedSelectedEvents.Reserve(SourceEvents->Num());
+            for (const FObjectNetEvent& Event : *SourceEvents)
+            {
+                if (CurrentQuery.PassesEvent(Event))
+                {
+                    CachedSelectedEvents.Add(Event);
+                }
+            }
         }
+
+        CachedSelectedEvents.Sort([](const FObjectNetEvent& A, const FObjectNetEvent& B)
+        {
+            return A.TimeSec < B.TimeSec;
+        });
+
+        bSelectedEventsCacheValid = true;
     }
 
-    FilteredEvents.Sort([](const FObjectNetEvent& A, const FObjectNetEvent& B)
-    {
-        return A.TimeSec < B.TimeSec;
-    });
-
-    return FilteredEvents;
+    return CachedSelectedEvents;
 }
 
 EObjectNetDataSourceKind FObjectNetProvider::GetLastDataSourceKind() const
@@ -172,6 +182,11 @@ double FObjectNetProvider::GetLastPacketRefRatio() const
     return static_cast<double>(LastPacketRefEventCount) / static_cast<double>(LastEventCount);
 }
 
+uint64 FObjectNetProvider::GetViewRevision() const
+{
+    return ViewRevision;
+}
+
 FObjectNetTraceReader& FObjectNetProvider::GetReader()
 {
     return TraceReader;
@@ -180,4 +195,34 @@ FObjectNetTraceReader& FObjectNetProvider::GetReader()
 const FObjectNetTraceReader& FObjectNetProvider::GetReader() const
 {
     return TraceReader;
+}
+
+void FObjectNetProvider::RebuildViewState()
+{
+    CurrentAggregates = Aggregator.BuildAggregates(Analyzer, CurrentQuery);
+    InvalidateSelectionCaches();
+
+    if (SelectedObjectId.IsSet())
+    {
+        const TOptional<FObjectNetAggregate> SelectedAggregate = Aggregator.BuildAggregateForObject(
+            SelectedObjectId.GetValue(),
+            Analyzer,
+            CurrentQuery);
+
+        if (!SelectedAggregate.IsSet())
+        {
+            SelectedObjectId.Reset();
+            InvalidateSelectionCaches();
+        }
+    }
+
+    ++ViewRevision;
+}
+
+void FObjectNetProvider::InvalidateSelectionCaches()
+{
+    CachedSelectedAggregate.Reset();
+    CachedSelectedEvents.Reset();
+    bSelectedAggregateCacheValid = false;
+    bSelectedEventsCacheValid = false;
 }

@@ -169,6 +169,12 @@
   - bridge 新增低置信标签识别（如 `A`、`Pending`、`N/A`、单字符）。
   - 低信息对象名回退为 `UnresolvedObject_0x...`，低置信类名不直接采信，继续走后续回退链路。
   - 编译与回归验证：`ObjectNetInspector.Provider.FilteringAndAggregation` Success（1/1，failed=0）。
+- UI 交互性能与可用性修复（2026-03-11 14:35 CST）：
+  - 修复对象列表表头/行内容列模型不一致问题，改为 `SMultiColumnTableRow`，解决列标题与内容对齐偏差。
+  - 对象列表全部列支持点击排序（`Name/Class/Events/RPCs/Properties/KnownBytes`）。
+  - Provider 增加视图缓存与 `ViewRevision` 版本号，`SetQuery` 不再触发全量会话重读，仅重建筛选结果。
+  - EventTable/ObjectList 的 `Tick` 从“全量指纹重算”改为“版本号变化检测”，避免大对象选中时每帧扫描全事件。
+  - 自动化回归：`ObjectNetInspector.` 全部 Success（6/6，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

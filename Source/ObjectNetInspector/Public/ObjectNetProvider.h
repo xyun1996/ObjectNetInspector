@@ -38,11 +38,15 @@ public:
     double GetLastUnknownRatio() const;
     int32 GetLastPacketRefEventCount() const;
     double GetLastPacketRefRatio() const;
+    uint64 GetViewRevision() const;
 
     FObjectNetTraceReader& GetReader();
     const FObjectNetTraceReader& GetReader() const;
 
 private:
+    void RebuildViewState();
+    void InvalidateSelectionCaches();
+
     FObjectNetTraceReader TraceReader;
     FObjectNetAnalyzer Analyzer;
     FObjectNetAggregator Aggregator;
@@ -50,8 +54,13 @@ private:
     FObjectNetQuery CurrentQuery;
     TOptional<uint64> SelectedObjectId;
     TArray<FObjectNetAggregate> CurrentAggregates;
+    mutable TOptional<FObjectNetAggregate> CachedSelectedAggregate;
+    mutable TArray<FObjectNetEvent> CachedSelectedEvents;
+    mutable bool bSelectedAggregateCacheValid;
+    mutable bool bSelectedEventsCacheValid;
     EObjectNetDataSourceKind LastDataSourceKind;
     int32 LastEventCount;
     int32 LastUnknownEventCount;
     int32 LastPacketRefEventCount;
+    uint64 ViewRevision;
 };
