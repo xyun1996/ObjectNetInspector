@@ -165,6 +165,10 @@
 - 程序侧 smoke 验证（2026-03-11 13:33 CST）：
   - `pwsh -File .\scripts\Smoke-ObjectNetInsights.ps1 -ProjectPath "G:\workspace\ue5\Lyra\Lyra.uproject" -TraceFile "<sample.utrace>"`
   - 结果：通过（脚本返回 0）。
+- 对象名/类名显示优化（2026-03-11 14:04 CST）：
+  - bridge 新增低置信标签识别（如 `A`、`Pending`、`N/A`、单字符）。
+  - 低信息对象名回退为 `UnresolvedObject_0x...`，低置信类名不直接采信，继续走后续回退链路。
+  - 编译与回归验证：`ObjectNetInspector.Provider.FilteringAndAggregation` Success（1/1，failed=0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

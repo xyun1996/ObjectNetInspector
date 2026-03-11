@@ -70,6 +70,39 @@ static bool IsGenericEventLabel(const FString& Label)
         Label.Equals(TEXT("Payload"), SearchCase);
 }
 
+static bool IsLowConfidenceLabel(const FString& Value)
+{
+    FString Normalized = Value;
+    Normalized.TrimStartAndEndInline();
+    if (Normalized.IsEmpty())
+    {
+        return true;
+    }
+
+    if (Normalized.Len() <= 1)
+    {
+        return true;
+    }
+
+    const ESearchCase::Type SearchCase = ESearchCase::IgnoreCase;
+    return Normalized.Equals(TEXT("None"), SearchCase) ||
+        Normalized.Equals(TEXT("N/A"), SearchCase) ||
+        Normalized.Equals(TEXT("Unknown"), SearchCase) ||
+        Normalized.Equals(TEXT("Pending"), SearchCase) ||
+        Normalized.Equals(TEXT("Object"), SearchCase);
+}
+
+static bool IsLowConfidenceClassName(const FString& Value)
+{
+    if (IsLowConfidenceLabel(Value))
+    {
+        return true;
+    }
+
+    const ESearchCase::Type SearchCase = ESearchCase::IgnoreCase;
+    return Value.Equals(TEXT("Actor"), SearchCase);
+}
+
 } // namespace
 
 bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& OutEvents)
@@ -362,45 +395,71 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                                 EventLevel,
                                                 static_cast<uint8>(ContentEvent.Level));
 
-                                            const FString RawObjectName = !ObjectInfo->Name.IsEmpty()
-                                                ? ObjectInfo->Name
-                                                : FString::Printf(TEXT("Object_%u"), ContentEvent.ObjectInstanceIndex);
+                                            const uint64 EffectiveObjectId = ObjectInfo->NetObjectId != 0ull
+                                                ? ObjectInfo->NetObjectId
+                                                : MakeObjectCacheKey(GameInstanceIndex, ContentEvent.ObjectInstanceIndex);
+
+                                            const FString FallbackObjectName = FString::Printf(TEXT("UnresolvedObject_0x%llX"), EffectiveObjectId);
+                                            FString RawObjectName = ObjectInfo->Name;
+                                            if (IsLowConfidenceLabel(RawObjectName))
+                                            {
+                                                RawObjectName = FallbackObjectName;
+                                            }
 
                                             FObjectNetEvent Event;
                                             Event.TimeSec = PacketTimeSec;
                                             Event.ConnectionId = Connection.ConnectionId;
-                                            Event.ObjectId = ObjectInfo->NetObjectId != 0ull
-                                                ? ObjectInfo->NetObjectId
-                                                : MakeObjectCacheKey(GameInstanceIndex, ContentEvent.ObjectInstanceIndex);
+                                            Event.ObjectId = EffectiveObjectId;
                                             FObjectNetMetadataParser::ParseObjectNameAndPath(RawObjectName, Event.ObjectName, Event.ObjectPath);
+                                            if (IsLowConfidenceLabel(Event.ObjectName))
+                                            {
+                                                Event.ObjectName = FallbackObjectName;
+                                            }
                                             if (!ObjectInfo->TypeName.IsEmpty())
                                             {
                                                 Event.ClassName = FObjectNetMetadataParser::NormalizeClassName(ObjectInfo->TypeName);
-                                                if (!Event.ClassName.IsEmpty())
+                                                if (!Event.ClassName.IsEmpty() && !IsLowConfidenceClassName(Event.ClassName))
                                                 {
                                                     ++ClassFromTypeNameCount;
+                                                }
+                                                else
+                                                {
+                                                    Event.ClassName.Empty();
                                                 }
                                             }
                                             if (Event.ClassName.IsEmpty())
                                             {
-                                                if (FObjectNetMetadataParser::TryInferClassName(RawObjectName, Event.ClassName))
+                                                FString CandidateClassName;
+                                                if (FObjectNetMetadataParser::TryInferClassName(RawObjectName, CandidateClassName) &&
+                                                    !IsLowConfidenceClassName(CandidateClassName))
                                                 {
+                                                    Event.ClassName = MoveTemp(CandidateClassName);
                                                     ++ClassFromObjectNameCount;
                                                 }
-                                                else if (!EventTypeName.IsEmpty() && FObjectNetMetadataParser::TryInferClassNameFromEventName(EventTypeName, Event.ClassName))
+                                                else if (!EventTypeName.IsEmpty() &&
+                                                    FObjectNetMetadataParser::TryInferClassNameFromEventName(EventTypeName, CandidateClassName) &&
+                                                    !IsLowConfidenceClassName(CandidateClassName))
                                                 {
+                                                    Event.ClassName = MoveTemp(CandidateClassName);
                                                     ++ClassFromEventScopeCount;
                                                 }
-                                                else if (!ContentName.IsEmpty() && FObjectNetMetadataParser::TryInferClassNameFromEventName(ContentName, Event.ClassName))
+                                                else if (!ContentName.IsEmpty() &&
+                                                    FObjectNetMetadataParser::TryInferClassNameFromEventName(ContentName, CandidateClassName) &&
+                                                    !IsLowConfidenceClassName(CandidateClassName))
                                                 {
+                                                    Event.ClassName = MoveTemp(CandidateClassName);
                                                     ++ClassFromEventScopeCount;
                                                 }
-                                                else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(DisplayEventName, Event.ClassName))
+                                                else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(DisplayEventName, CandidateClassName) &&
+                                                    !IsLowConfidenceClassName(CandidateClassName))
                                                 {
+                                                    Event.ClassName = MoveTemp(CandidateClassName);
                                                     ++ClassFromEventScopeCount;
                                                 }
-                                                else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(ClassificationText, Event.ClassName))
+                                                else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(ClassificationText, CandidateClassName) &&
+                                                    !IsLowConfidenceClassName(CandidateClassName))
                                                 {
+                                                    Event.ClassName = MoveTemp(CandidateClassName);
                                                     ++ClassFromEventScopeCount;
                                                 }
                                                 else

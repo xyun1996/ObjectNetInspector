@@ -141,3 +141,11 @@
 - 范围说明：
   - 该脚本用于“插件加载链路健康度”快速回归，不替代 NetProfiler 内容完整性验证。
   - NetProfiler 数据是否存在，仍以 Insights 的 `Session Info -> Analysis Modules` 为准。
+
+## 15. 低置信对象标签回退（2026-03-11）
+- 背景：真实 trace 中会出现 `A`、`Pending`、`N/A` 等低信息量对象名/类名，导致列表可读性差。
+- 方案：
+  - 在 bridge 映射阶段识别低置信标签并回退为 `UnresolvedObject_0x...`。
+  - 对低置信 `ClassName`（如单字符/`None`/`Pending`）不直接采信，继续走事件作用域或 TypeId 回退链路。
+- 结果：
+  - 避免大量无意义 `A` 行，提升对象列表排查效率。
