@@ -1,106 +1,114 @@
-# ObjectNetInspector (MVP)
+# ObjectNetInspector
 
-## 1. 插件用途
-`ObjectNetInspector` 是一个 Unreal Insights 扩展面板插件，用于做对象级网络分析。
-它聚焦于“某个对象在一段时间内发生了哪些 RPC / 属性同步事件，以及可归因载荷量级”。
+`ObjectNetInspector` 是一个 Unreal Insights 扩展面板插件，用于对象级网络分析（RPC / 属性同步 / 可归因载荷）。
 
-## 2. MVP 功能范围
-- 在 Insights 中提供 `Object Net Inspector` Nomad Tab 面板
-- 按对象名 / 路径 / 类名 / 事件名搜索过滤
-- 显示对象聚合列表（事件数、RPC 数、属性数、Known Bytes）
-- 显示选中对象详情（Top RPC / Top Property）
-- 显示选中对象事件表（时间、方向、连接、类型、包、Bits/Bytes）
-- 支持 ConnectionId 过滤
-- 支持时间窗过滤
-- 支持 RPC / Property 开关及 Outgoing Only 过滤
-- 工具栏显示数据源状态（Session / Mock）、当前事件总数、`Unknown%` 与 `PacketRef%`
-- 无真实 Trace 接入时自动回落到 `LoadMockDataForTesting()`
+## 作者与维护
+- 第一作者：Codex (GPT-5, OpenAI)
+- 项目发起与主维护：xianyun
+- 说明：本仓库采用「AI + 人类协作开发」模式，所有关键改动均经过可运行脚本与自动化回归验证。
 
-### UnrealInsights 程序侧支持（UE5.7）
-- 插件模块已支持 `EditorAndProgram`，并允许在 `UnrealInsights.exe` 进程加载（`ProgramAllowList=UnrealInsights`）。
-- 若在 Unreal Insights 中打开 `.utrace` 后可见 `Source: Session`，表示已走真实会话链路。
-- 若显示 `Source: Mock`，表示当前未取到 active session，会自动回落 mock 数据。
+## 项目目标
+- 在 Unreal Insights 中提供 `Object Net Inspector` 面板
+- 按对象查看事件聚合（Events / RPCs / Properties / Known Bytes）
+- 支持搜索、连接过滤、时间窗过滤、方向过滤
+- 展示对象详情与事件明细（Time / Direction / Connection / Type / Packet / Bits/Bytes）
+- 在无 active session 时自动回退 Mock 数据，保证面板始终可用
 
-## 3. 非目标
-- 不做运行时 UMG/HUD
-- 不做 socket 抓包与底层协议反解
-- 不做网卡层精确流量核算
-- 不做完整包头/通道开销还原
-- 第一版不强行覆盖所有 Iris/旧复制细节差异
+## 当前状态（MVP）
+- UE5.7 Editor + UnrealInsights Program 侧已打通
+- Program 模块支持：`EditorAndProgram` + `ProgramAllowList=UnrealInsights`
+- 已有自动化测试与一键脚本
+- 已完成主要性能与交互修复（列表排序、选择稳定性、大样本响应优化）
 
-## 4. “对象流量”定义
-对象流量 = 与该对象相关 trace 事件中**可归因 payload bits/bytes**的聚合值。
+## 快速开始
 
-该值用于：
-- 调试定位
-- 对象间相对比较
+### 1) 准备
+- Windows + PowerShell 7
+- UE5.7 源码或已安装引擎
+- 一个 `.uproject` 工程（示例：Lyra）
 
-该值不等同于：
-- 网卡层真实流量
-- 完整数据包级精确统计
+### 2) 一键运行自动化
+```powershell
+pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "G:\workspace\ue5\Lyra\Lyra.uproject"
+```
 
-如果事件拿不到 Bits/Bytes：
-- 事件仍展示
-- 显示 `N/A`
-- 聚合只累计已知 bits/bytes
-- 事件计数照常累计
+### 3) 启动 Unreal Insights（自动同步插件）
+```powershell
+pwsh -File .\scripts\Launch-UnrealInsights.ps1 `
+  -ProjectPath "G:\workspace\ue5\Lyra\Lyra.uproject" `
+  -TraceFile "C:\Users\<you>\AppData\Local\UnrealEngine\Common\UnrealTrace\Store\001\sample.utrace"
+```
 
-## 5. 当前实现结构
-- `FObjectNetTraceReader`：统一读取入口，支持可注入 SessionReader 与 mock 回落
-- `FObjectNetInsightsBridge`：UE5.7 兼容的 Insights/NetProfiler 会话读取与事件映射适配边界
-- `FObjectNetAnalyzer`：按对象/连接/包建立索引
-- `FObjectNetAggregator`：生成对象聚合并排序
-- `FObjectNetProvider`：管理 Query、选中对象、刷新和数据源状态
-- Slate UI：Toolbar + ObjectList + DetailView + EventTable
+### 4) 在 Insights 中使用
+- 打开 `Object Net Inspector` 面板
+- 点击 `Refresh`
+- 用搜索框或过滤条件缩小范围
+- 选中左侧对象查看右侧详情/事件
+- 可点击 `Networking` 按钮跳到 Networking Insights 做交叉分析
 
-## 6. 建议开发顺序
-1. 阶段 A：插件骨架（uplugin/build/module）
-2. 阶段 B：核心数据结构（Event/Aggregate/Query）
-3. 阶段 C：Trace 接入适配层 + Mock 链路
-4. 阶段 D：索引与聚合
-5. 阶段 E：Slate 面板联动
-6. 阶段 F：README + 扩展计划
+## 如何采集可分析的 NetTrace
+- 在 PIE/Standalone 运行前，确保网络追踪已启用（如 `NetTrace.SetTraceVerbosity 1`）
+- 生成 `.utrace` 后用上面的启动脚本打开
+- 面板顶部若显示 `Source: Session` 表示已读取真实会话数据
 
-## 7. 后续扩展方向
-- 更精细字节归因（按字段/子系统拆分）
-- 与 Networking Insights 包/连接视图联动跳转
-- 可选运行时 HUD（调试构建专用）
-- Iris 专项适配（协议事件归因与字段映射）
+## 核心口径（务必统一）
+- 对象流量 = 该对象关联事件中的**可归因 payload bits/bytes**聚合值
+- 若事件缺失 `BitCount`：
+- 事件仍保留
+- `Bits/Bytes` 显示 `N/A`
+- 聚合仅累计已知 bits
 
-## 8. TODO（明确下一步）
-- 继续提升 `FObjectNetInsightsBridge` 的事件类型归因准确率（减少 Unknown/误判）
-- 若 UE API 可提供，补充对象真实 `ClassName/ObjectPath` 映射
-- 视 UE 版本细化 Tab 在 Insights Workspace 菜单中的挂载
-- 增加更多自动化用例（归因分类稳定性、真实会话映射回归）
+## 项目结构（给二次开发者）
+- `Source/ObjectNetInspector/Private/Analysis/ObjectNetInsightsBridge.cpp`
+  - UE Trace/NetProfiler API 适配层（版本敏感）
+- `Source/ObjectNetInspector/Private/Analysis/ObjectNetEventClassifier.cpp`
+  - 事件分类器（Rpc/Property/PacketRef/Unknown）
+- `Source/ObjectNetInspector/Private/Analysis/ObjectNetProvider.cpp`
+  - UI 数据提供者（Query、刷新、缓存、revision）
+- `Source/ObjectNetInspector/Private/UI/`
+  - Slate 面板实现（Toolbar/ObjectList/Detail/EventTable）
+- `Source/ObjectNetInspector/Private/Tests/`
+  - 自动化回归测试
+- `scripts/`
+  - 启动、测试、smoke 校验脚本
 
-## 9. 文本编辑规则
-- 为避免 CRLF/LF 混乱和误写入 `` `r`n `` 字面量，请遵循：
-  - [docs/TEXT_HYGIENE_RULES.md](docs/TEXT_HYGIENE_RULES.md)
+## 二次开发指南
 
-## 10. UE5.7 排障文档
-- UnrealInsights/NetTrace 常见问题与解决步骤：
-  - [docs/UE57_TROUBLESHOOTING.md](docs/UE57_TROUBLESHOOTING.md)
+### 1) 扩展分类规则（最常见）
+1. 修改 `ObjectNetEventClassifier.cpp` 词典/权重
+2. 在 `ObjectNetEventClassifierTests.cpp` 增加回归用例
+3. 执行 `Run-ObjectNetTests.ps1`，确保 `ObjectNetInspector.` 全绿
 
-测试与脚本入口：
+### 2) 扩展对象元数据映射
+1. 先看 `ObjectNetInsightsBridge.cpp` 里的 `FNetProfilerObjectInstance` 映射
+2. 如 UE 新版本暴露更多字段（ClassPath/ObjectPath），优先走真实字段
+3. 保留当前回退链路（TypeName -> 推断 -> TypeIdFallback）
+
+### 3) 扩展 UI 交互
+1. 优先在 `Provider` 层加能力，再让 UI 订阅 revision 刷新
+2. 避免在 Tick 做全量扫描，优先使用缓存+版本号
+
+## 质量与提交流程
+- 提交前至少跑：
+```powershell
+pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "<YourProject>.uproject"
+```
+- 文档同步更新：
+- `docs/WORKLOG.md`：记录本次做了什么
+- `docs/DESIGN_NOTES.md`：记录设计取舍
+- 文本/换行规则：
+- `docs/TEXT_HYGIENE_RULES.md`
+
+## 故障排查
+- UE5.7 常见问题与修复步骤：
+- [docs/UE57_TROUBLESHOOTING.md](docs/UE57_TROUBLESHOOTING.md)
+- 测试与脚本说明：
 - [docs/TESTING.md](docs/TESTING.md)
-- `scripts/Launch-UnrealInsights.ps1`（支持 `-TraceFile` 文件/目录、`-NoAutoTraceScan`）
-- `scripts/Smoke-ObjectNetInsights.ps1`（Program 侧一键 smoke 校验）
 
-## 11. UnrealInsights 打开方式（示例）
-先确保 `UnrealInsights` 目标已编译一次（会产出 Program 侧插件模块）：
+## Roadmap
+- 基于真实样本继续降低 `Unknown%`
+- 跟进 UE API，补全更强的真实对象元数据
+- 完成 UE5.6/5.7 跨版本回归矩阵
 
-```powershell
-G:\workspace\repo\github\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
-  UnrealInsights Win64 Development `
-  -Project="G:\workspace\ue5\Lyra\Lyra.uproject" `
-  -EnablePlugins=ObjectNetInspector `
-  -WaitMutex -FromMsBuild
-```
-
-然后启动：
-
-```powershell
-G:\workspace\repo\github\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
-  -project="G:\workspace\ue5\Lyra\Lyra.uproject" `
-  -OpenTraceFile="G:\path\to\sample.utrace"
-```
+## License
+当前仓库未单独声明 License。若计划公开发布到 GitHub，建议先补充 `LICENSE` 文件（如 MIT/Apache-2.0）。
