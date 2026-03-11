@@ -81,16 +81,16 @@
 先确保 `UnrealInsights` 目标已编译一次（会产出 Program 侧插件模块）：
 
 ```powershell
-E:\eworkspace\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
+G:\workspace\repo\github\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
   UnrealInsights Win64 Development `
-  -Project="E:\eworkspace\Lyra\Lyra.uproject" `
+  -Project="G:\workspace\ue5\Lyra\Lyra.uproject" `
   -WaitMutex -FromMsBuild
 ```
 
 然后启动：
 
 ```powershell
-E:\eworkspace\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
-  -project="E:\eworkspace\Lyra\Lyra.uproject" `
-  -OpenTraceFile="E:\path\to\sample.utrace"
+G:\workspace\repo\github\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
+  -project="G:\workspace\ue5\Lyra\Lyra.uproject" `
+  -OpenTraceFile="G:\path\to\sample.utrace"
 ```

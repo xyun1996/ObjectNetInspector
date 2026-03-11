@@ -16,7 +16,7 @@
 在仓库根目录执行：
 
 ```powershell
-pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "E:\eworkspace\Lyra"
+pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "G:\workspace\ue5\Lyra"
 ```
 
 默认行为：
@@ -35,7 +35,7 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "E:\eworkspace\Lyra"
 
 ```powershell
 pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
-  -ProjectPath "E:\eworkspace\Lyra" `
+  -ProjectPath "G:\workspace\ue5\Lyra" `
   -TestName "ObjectNetInspector.Classifier.KindInference"
 ```
 
@@ -64,18 +64,18 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 `
 1. 先编译 Program 目标（至少一次）：
 
 ```powershell
-E:\eworkspace\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
+G:\workspace\repo\github\UnrealEngine\Engine\Build\BatchFiles\Build.bat `
   UnrealInsights Win64 Development `
-  -Project="E:\eworkspace\Lyra\Lyra.uproject" `
+  -Project="G:\workspace\ue5\Lyra\Lyra.uproject" `
   -WaitMutex -FromMsBuild
 ```
 
 2. 打开 trace：
 
 ```powershell
-E:\eworkspace\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
-  -project="E:\eworkspace\Lyra\Lyra.uproject" `
-  -OpenTraceFile="E:\eworkspace\Lyra\Saved\Profiling\20260310_215400_829D80.utrace" `
+G:\workspace\repo\github\UnrealEngine\Engine\Binaries\Win64\UnrealInsights.exe `
+  -project="G:\workspace\ue5\Lyra\Lyra.uproject" `
+  -OpenTraceFile="G:\workspace\ue5\Lyra\Saved\Profiling\20260310_215400_829D80.utrace" `
   -log
 ```
 
@@ -106,6 +106,6 @@ pwsh -File .\scripts\Launch-UnrealInsights.ps1
 常用参数：
 - `-BuildInsights:$true`：启动前先编译 `UnrealInsights`
 - `-SyncPlugin:$false`：跳过插件同步
-- `-TraceFile "E:\path\to\sample.utrace"`：指定 trace 文件
+- `-TraceFile "G:\path\to\sample.utrace"`：指定 trace 文件
 - `-AutoQuit`：打开并自动退出（适合脚本验证）
 - `-DisableOtherPlugins`：仅启用 ObjectNetInspector（排查插件冲突）
