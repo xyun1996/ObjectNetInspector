@@ -145,6 +145,26 @@
 - 自动化验证（2026-03-11 12:54 CST）：
   - `ObjectNetInspector.Provider.FilterEdgeCases` -> Success（1/1，failed=0）。
 - 测试脚本健壮性改进：`Run-ObjectNetTests.ps1` 在清理插件目录失败（常见 DLL 占用）时改为 Warning 并继续覆盖同步，减少误报红字干扰。
+- `Kind` 归因词典继续扩展（RPC/Property/PacketRef）：
+  - RPC：`serverfunction/clientfunction/clientrpc/serverrpc`
+  - Property：`pollobject/writeobject/subobject/statebuffer/repindex`
+  - PacketRef：`packetsize/sequencenumber/deliverystatus`
+- ClassName 推断链路增强：
+  - EventScope 回退不再只用拼接文本，改为优先尝试 `EventTypeName`、`ContentName`、`DisplayEventName`，最后再回退组合文本。
+  - `TryInferClassNameFromEventName` 支持复合字符串 token 化提取，提升真实 trace 复杂命名下的命中率。
+- 新增自动化测试：
+  - `ObjectNetInspector.Classifier.QualityGuard`（样本语料质量守卫，Unknown 比例上限）
+  - `ObjectNetInspector.MetadataParser.ObjectNamePath` 补充复合事件文本推断用例
+- 新增程序侧 smoke 脚本：`scripts/Smoke-ObjectNetInsights.ps1`
+  - 自动 `-AutoQuit` 启动 UnrealInsights 并校验日志关键标记（插件挂载与模块注册）。
+- 启动脚本增强：`Launch-UnrealInsights.ps1` 新增 `-NoAutoTraceScan`，支持“仅显式 trace 文件，不自动扫描”模式。
+- 自动化脚本参数更新：`Run-ObjectNetTests.ps1` 改用 `-ReportExportPath`（兼容 UE5.7 新参数名，消除告警）。
+- 自动化回归结果（2026-03-11 13:33 CST）：
+  - `pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "G:\workspace\ue5\Lyra\Lyra.uproject" -SkipBuild`
+  - 结果：Success（6/6，failed=0）。
+- 程序侧 smoke 验证（2026-03-11 13:33 CST）：
+  - `pwsh -File .\scripts\Smoke-ObjectNetInsights.ps1 -ProjectPath "G:\workspace\ue5\Lyra\Lyra.uproject" -TraceFile "<sample.utrace>"`
+  - 结果：通过（脚本返回 0）。
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

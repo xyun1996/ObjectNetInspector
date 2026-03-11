@@ -119,3 +119,25 @@
   - 清理失败仅输出 Warning，并继续执行“覆盖拷贝 + 构建/测试”流程。
 - 设计理由：
   - 在多实例编辑器/Insights 并行开发场景下，文件锁是常态，不应把可恢复场景当作硬失败。
+
+## 13. 分类器与映射补充（2026-03-11）
+- 分类器词典补充：
+  - RPC：`serverfunction/clientfunction/clientrpc/serverrpc`
+  - Property：`pollobject/writeobject/subobject/statebuffer/repindex`
+  - PacketRef：`packetsize/sequencenumber/deliverystatus`
+- 设计取舍：
+  - 新增词均为网络语境强相关词，避免引入大范围泛词，优先控制误报。
+  - 继续保留“弱信号阈值 + 冲突回退 Unknown”策略，保证保守归因。
+- ClassName 回退链路调整：
+  - 原先主要依赖拼接后的 `ClassificationText` 推断；现在优先尝试 `EventTypeName`、`ContentName`、`DisplayEventName`，最后才回退拼接文本。
+  - 目的：减少复合字符串噪声（多 token 拼接）对 `Class::Function` 提取的干扰。
+
+## 14. Program 侧 smoke 校验策略（2026-03-11）
+- 新增 `scripts/Smoke-ObjectNetInsights.ps1`：
+  - 调用 `Launch-UnrealInsights.ps1 -AutoQuit`
+  - 读取 `UnrealInsights.log` 校验关键标记：
+    - `Mounting Project plugin ObjectNetInspector`
+    - `ObjectNetInspector module started and tab spawner registered.`
+- 范围说明：
+  - 该脚本用于“插件加载链路健康度”快速回归，不替代 NetProfiler 内容完整性验证。
+  - NetProfiler 数据是否存在，仍以 Insights 的 `Session Info -> Analysis Modules` 为准。

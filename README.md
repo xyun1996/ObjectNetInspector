@@ -81,6 +81,11 @@
 - UnrealInsights/NetTrace 常见问题与解决步骤：
   - [docs/UE57_TROUBLESHOOTING.md](docs/UE57_TROUBLESHOOTING.md)
 
+测试与脚本入口：
+- [docs/TESTING.md](docs/TESTING.md)
+- `scripts/Launch-UnrealInsights.ps1`（支持 `-TraceFile` 文件/目录、`-NoAutoTraceScan`）
+- `scripts/Smoke-ObjectNetInsights.ps1`（Program 侧一键 smoke 校验）
+
 ## 11. UnrealInsights 打开方式（示例）
 先确保 `UnrealInsights` 目标已编译一次（会产出 Program 侧插件模块）：
 

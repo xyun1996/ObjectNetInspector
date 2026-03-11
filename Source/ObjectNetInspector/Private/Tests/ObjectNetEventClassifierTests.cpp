@@ -104,6 +104,21 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         static_cast<uint8>(EObjectNetEventKind::PacketRef));
 
     TestEqual(
+        TEXT("Delivery status should map to PacketRef"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("PacketDeliveryStatus"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::PacketRef));
+
+    TestEqual(
+        TEXT("StateBuffer should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("IrisStateBufferChangeMask"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
+        TEXT("WriteObject should map to Property"),
+        static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("WriteObjectNetField"), 0, 0)),
+        static_cast<uint8>(EObjectNetEventKind::Property));
+
+    TestEqual(
         TEXT("Property signal should win over packet hint"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("ReplicatedPropertyPacket"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Property));
@@ -117,6 +132,58 @@ bool FObjectNetEventClassifierTest::RunTest(const FString& Parameters)
         TEXT("No signal should stay Unknown"),
         static_cast<uint8>(FObjectNetEventClassifier::InferKind(TEXT("CustomPayload"), 0, 0)),
         static_cast<uint8>(EObjectNetEventKind::Unknown));
+
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FObjectNetEventClassifierQualityGuardTest,
+    "ObjectNetInspector.Classifier.QualityGuard",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FObjectNetEventClassifierQualityGuardTest::RunTest(const FString& Parameters)
+{
+    (void)Parameters;
+
+    struct FCase
+    {
+        const TCHAR* Name;
+        EObjectNetEventKind Expected;
+    };
+
+    static const FCase Corpus[] =
+    {
+        { TEXT("ServerFireRpc"), EObjectNetEventKind::Rpc },
+        { TEXT("ClientRpc_OnDamage"), EObjectNetEventKind::Rpc },
+        { TEXT("ProcessRemoteFunctionForChannel"), EObjectNetEventKind::Rpc },
+        { TEXT("ReplicatedMovementProperty"), EObjectNetEventKind::Property },
+        { TEXT("FastArraySerializerDelta"), EObjectNetEventKind::Property },
+        { TEXT("IrisStateBufferChangeMask"), EObjectNetEventKind::Property },
+        { TEXT("WriteObjectNetField"), EObjectNetEventKind::Property },
+        { TEXT("ChannelBunchPacket"), EObjectNetEventKind::PacketRef },
+        { TEXT("PacketDeliveryStatus"), EObjectNetEventKind::PacketRef },
+        { TEXT("BuildFunctionTable"), EObjectNetEventKind::Unknown },
+        { TEXT("RemoteHandle"), EObjectNetEventKind::Unknown },
+        { TEXT("CustomPayload"), EObjectNetEventKind::Unknown }
+    };
+
+    int32 UnknownCount = 0;
+    for (const FCase& Entry : Corpus)
+    {
+        const EObjectNetEventKind Actual = FObjectNetEventClassifier::InferKind(Entry.Name, 0, 0);
+        if (Actual == EObjectNetEventKind::Unknown)
+        {
+            ++UnknownCount;
+        }
+
+        TestEqual(
+            FString::Printf(TEXT("Classifier corpus expectation: %s"), Entry.Name),
+            static_cast<uint8>(Actual),
+            static_cast<uint8>(Entry.Expected));
+    }
+
+    const double UnknownRatio = static_cast<double>(UnknownCount) / static_cast<double>(UE_ARRAY_COUNT(Corpus));
+    TestTrue(TEXT("Classifier corpus unknown ratio should stay <= 0.30"), UnknownRatio <= 0.30);
 
     return true;
 }

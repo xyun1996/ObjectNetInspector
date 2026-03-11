@@ -155,31 +155,112 @@ bool FObjectNetMetadataParser::TryInferClassNameFromEventName(const FString& Raw
 {
     OutClassName.Empty();
 
-    FString Candidate = StripOuterQuotes(RawEventName);
-    Candidate.TrimStartAndEndInline();
-    if (Candidate.IsEmpty())
+    auto IsLikelyClassLikeToken = [](const FString& Token) -> bool
     {
-        return false;
+        if (Token.IsEmpty())
+        {
+            return false;
+        }
+
+        const ESearchCase::Type SearchCase = ESearchCase::IgnoreCase;
+        if (Token.Equals(TEXT("Event"), SearchCase) ||
+            Token.Equals(TEXT("Payload"), SearchCase) ||
+            Token.Equals(TEXT("Unknown"), SearchCase))
+        {
+            return false;
+        }
+
+        if (Token.EndsWith(TEXT("_C")) ||
+            Token.Contains(TEXT("Component"), SearchCase) ||
+            Token.Contains(TEXT("Actor"), SearchCase) ||
+            Token.Contains(TEXT("Character"), SearchCase) ||
+            Token.Contains(TEXT("Pawn"), SearchCase) ||
+            Token.Contains(TEXT("Controller"), SearchCase))
+        {
+            return true;
+        }
+
+        // Scoped/path-based candidates are likely class-bearing tokens.
+        return Token.Contains(TEXT("::"), ESearchCase::CaseSensitive) ||
+            Token.Contains(TEXT("/"), ESearchCase::CaseSensitive) ||
+            Token.Contains(TEXT("."), ESearchCase::CaseSensitive);
+    };
+
+    auto TryFromCandidate = [](const FString& RawCandidate, FString& OutValue)
+    {
+        FString Candidate = StripOuterQuotes(RawCandidate);
+        Candidate.TrimStartAndEndInline();
+        if (Candidate.IsEmpty())
+        {
+            return false;
+        }
+        if (Candidate.Contains(TEXT(" "), ESearchCase::CaseSensitive))
+        {
+            return false;
+        }
+
+        int32 ScopeIndex = INDEX_NONE;
+        if (Candidate.FindLastChar(TEXT(':'), ScopeIndex) && ScopeIndex > 0)
+        {
+            // Handle "Class::Function" and similar event-name scopes.
+            if (ScopeIndex > 0 && Candidate[ScopeIndex - 1] == TEXT(':'))
+            {
+                Candidate = Candidate.Left(ScopeIndex - 1);
+            }
+        }
+
+        Candidate = NormalizeClassName(Candidate);
+        if (Candidate.IsEmpty())
+        {
+            return false;
+        }
+
+        OutValue = Candidate;
+        return true;
+    };
+
+    if (TryFromCandidate(RawEventName, OutClassName))
+    {
+        return true;
     }
 
-    int32 ScopeIndex = INDEX_NONE;
-    if (Candidate.FindLastChar(TEXT(':'), ScopeIndex) && ScopeIndex > 0)
+    TArray<FString> Tokens;
+    RawEventName.ParseIntoArrayWS(Tokens);
+    for (const FString& Token : Tokens)
     {
-        // Handle "Class::Function" and similar event-name scopes.
-        if (ScopeIndex > 0 && Candidate[ScopeIndex - 1] == TEXT(':'))
+        if (!IsLikelyClassLikeToken(Token))
         {
-            Candidate = Candidate.Left(ScopeIndex - 1);
+            continue;
+        }
+
+        if (TryFromCandidate(Token, OutClassName))
+        {
+            return true;
         }
     }
 
-    Candidate = NormalizeClassName(Candidate);
-    if (Candidate.IsEmpty())
+    for (const FString& Token : Tokens)
     {
-        return false;
+        FString Normalized = NormalizeClassName(Token);
+        if (!Normalized.IsEmpty() && (Normalized.EndsWith(TEXT("_C")) || Normalized.Contains(TEXT("Component"), ESearchCase::IgnoreCase)))
+        {
+            OutClassName = MoveTemp(Normalized);
+            return true;
+        }
     }
 
-    OutClassName = Candidate;
-    return true;
+    if (RawEventName.Contains(TEXT("::"), ESearchCase::CaseSensitive))
+    {
+        // Fallback for uncommon strings where ParseIntoArrayWS doesn't isolate a valid scope token.
+        FString Compact = RawEventName;
+        Compact.ReplaceInline(TEXT(" "), TEXT(""));
+        if (TryFromCandidate(Compact, OutClassName))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 FString FObjectNetMetadataParser::NormalizeClassName(const FString& RawClassName)

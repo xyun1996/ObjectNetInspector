@@ -151,7 +151,7 @@ Write-Host "Report: $ReportOutputPath"
     -ExecCmds="$execCmds" `
     -TestExit="Automation Test Queue Empty" `
     -log `
-    -ReportOutputPath="$ReportOutputPath"
+    -ReportExportPath="$ReportOutputPath"
 
 $editorExitCode = $LASTEXITCODE
 if ($editorExitCode -ne 0) {

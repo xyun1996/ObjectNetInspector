@@ -119,6 +119,24 @@ bool FObjectNetMetadataParserTest::RunTest(const FString& Parameters)
         TestEqual(TEXT("Blueprint scoped event should keep BP class token"), ClassName, FString(TEXT("BP_Weapon_C")));
     }
 
+    {
+        FString ClassName;
+        const bool bInferred = FObjectNetMetadataParser::TryInferClassNameFromEventName(
+            TEXT("Event Payload /Script/GameplayAbilities.AbilitySystemComponent::ServerTryActivateAbility"),
+            ClassName);
+        TestTrue(TEXT("Composite event text should still infer class name"), bInferred);
+        TestEqual(TEXT("Composite event should infer normalized class"), ClassName, FString(TEXT("AbilitySystemComponent")));
+    }
+
+    {
+        FString ClassName;
+        const bool bInferred = FObjectNetMetadataParser::TryInferClassNameFromEventName(
+            TEXT("SomePrefix BP_GrenadeComponent_C"),
+            ClassName);
+        TestTrue(TEXT("Tokenized BP class should infer class name"), bInferred);
+        TestEqual(TEXT("Tokenized BP class should keep _C suffix"), ClassName, FString(TEXT("BP_GrenadeComponent_C")));
+    }
+
     return true;
 }
 

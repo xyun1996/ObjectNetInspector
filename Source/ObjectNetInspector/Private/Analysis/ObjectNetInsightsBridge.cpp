@@ -387,6 +387,18 @@ bool FObjectNetInsightsBridge::TryReadActiveSession(TArray<FObjectNetEvent>& Out
                                                 {
                                                     ++ClassFromObjectNameCount;
                                                 }
+                                                else if (!EventTypeName.IsEmpty() && FObjectNetMetadataParser::TryInferClassNameFromEventName(EventTypeName, Event.ClassName))
+                                                {
+                                                    ++ClassFromEventScopeCount;
+                                                }
+                                                else if (!ContentName.IsEmpty() && FObjectNetMetadataParser::TryInferClassNameFromEventName(ContentName, Event.ClassName))
+                                                {
+                                                    ++ClassFromEventScopeCount;
+                                                }
+                                                else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(DisplayEventName, Event.ClassName))
+                                                {
+                                                    ++ClassFromEventScopeCount;
+                                                }
                                                 else if (FObjectNetMetadataParser::TryInferClassNameFromEventName(ClassificationText, Event.ClassName))
                                                 {
                                                     ++ClassFromEventScopeCount;

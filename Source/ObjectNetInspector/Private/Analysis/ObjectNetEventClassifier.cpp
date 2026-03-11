@@ -35,9 +35,13 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("function"), 1 },
         { TEXT("remotefunction"), 3 },
         { TEXT("processremotefunction"), 4 },
+        { TEXT("serverfunction"), 3 },
+        { TEXT("clientfunction"), 3 },
         { TEXT("callremote"), 3 },
         { TEXT("sendrpc"), 3 },
         { TEXT("dispatchrpc"), 3 },
+        { TEXT("clientrpc"), 4 },
+        { TEXT("serverrpc"), 4 },
         { TEXT("invoke"), 1 },
         { TEXT("netmulticast"), 4 },
         { TEXT("multicast"), 3 },
@@ -71,6 +75,11 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("fastarray"), 3 },
         { TEXT("serializer"), 2 },
         { TEXT("quantized"), 1 },
+        { TEXT("pollobject"), 2 },
+        { TEXT("writeobject"), 2 },
+        { TEXT("subobject"), 2 },
+        { TEXT("statebuffer"), 2 },
+        { TEXT("repindex"), 2 },
         { TEXT("changemask"), 2 },
         { TEXT("basestate"), 2 },
         { TEXT("dirty"), 1 }
@@ -85,7 +94,10 @@ EObjectNetEventKind FObjectNetEventClassifier::InferKind(const FString& EventNam
         { TEXT("header"), 1 },
         { TEXT("controlchannel"), 3 },
         { TEXT("channelbunch"), 3 },
-        { TEXT("netpacket"), 3 }
+        { TEXT("netpacket"), 3 },
+        { TEXT("packetsize"), 2 },
+        { TEXT("sequencenumber"), 2 },
+        { TEXT("deliverystatus"), 2 }
     };
 
     int32 RpcScore = ComputeScore(EventName, RpcTerms, UE_ARRAY_COUNT(RpcTerms));

@@ -13,7 +13,7 @@ param(
 
     [switch]$DisableOtherPlugins,
 
-    [switch]$ForceEnablePluginArg
+    [switch]$NoAutoTraceScan
 )
 
 function Resolve-UProjectPath {
@@ -72,7 +72,8 @@ function Resolve-EngineRoot {
 function Resolve-TraceFile {
     param(
         [string]$RequestedTraceFile,
-        [string]$ProjectDir
+        [string]$ProjectDir,
+        [bool]$AllowAutoScan = $true
     )
 
     if (-not [string]::IsNullOrWhiteSpace($RequestedTraceFile)) {
@@ -98,6 +99,10 @@ function Resolve-TraceFile {
         }
 
         return $requestedItem.FullName
+    }
+
+    if (-not $AllowAutoScan) {
+        return ""
     }
 
     $candidateDirs = @()
@@ -126,7 +131,7 @@ $buildBat = Join-Path $resolvedEngineRoot "Engine\Build\BatchFiles\Build.bat"
 
 $uprojectPath = Resolve-UProjectPath -InputPath $ProjectPath
 $projectDir = Split-Path -Parent $uprojectPath
-$resolvedTraceFile = Resolve-TraceFile -RequestedTraceFile $TraceFile -ProjectDir $projectDir
+$resolvedTraceFile = Resolve-TraceFile -RequestedTraceFile $TraceFile -ProjectDir $projectDir -AllowAutoScan (-not $NoAutoTraceScan.IsPresent)
 
 $sourcePluginRoot = Split-Path -Parent $PSScriptRoot
 $destinationPluginsDir = Join-Path $projectDir "Plugins"
@@ -163,7 +168,12 @@ if (-not [string]::IsNullOrWhiteSpace($resolvedTraceFile)) {
     $args += "-OpenTraceFile=$resolvedTraceFile"
 }
 else {
-    Write-Host "No trace file provided/found. UnrealInsights will open without an initial trace."
+    if ($NoAutoTraceScan.IsPresent) {
+        Write-Host "No trace file provided and auto scan disabled (-NoAutoTraceScan). UnrealInsights will open without an initial trace."
+    }
+    else {
+        Write-Host "No trace file provided/found. UnrealInsights will open without an initial trace."
+    }
 }
 
 if ($AutoQuit.IsPresent) {

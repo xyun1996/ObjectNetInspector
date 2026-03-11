@@ -1,6 +1,6 @@
 # TESTING - ObjectNetInspector
 
-更新时间：2026-03-10（Asia/Shanghai）
+更新时间：2026-03-11（Asia/Shanghai）
 
 ## 1. 前置条件
 - 插件已放入 UE 工程（例如 Lyra）并能成功编译。
@@ -9,7 +9,9 @@
 ## 2. 单测名称
 - `ObjectNetInspector.Provider.FilteringAndAggregation`
 - `ObjectNetInspector.Provider.SearchFields`
+- `ObjectNetInspector.Provider.FilterEdgeCases`
 - `ObjectNetInspector.Classifier.KindInference`
+- `ObjectNetInspector.Classifier.QualityGuard`
 - `ObjectNetInspector.MetadataParser.ObjectNamePath`
 
 ## 3. 推荐跑法（脚本）
@@ -110,4 +112,26 @@ pwsh -File .\scripts\Launch-UnrealInsights.ps1
 - `-TraceFile "G:\path\to\sample.utrace"`：指定 trace 文件
 - `-AutoQuit`：打开并自动退出（适合脚本验证）
 - `-DisableOtherPlugins`：仅启用 ObjectNetInspector（排查插件冲突）
+- `-NoAutoTraceScan`：不自动扫描最新 `.utrace`；仅在显式 `-TraceFile` 时打开 trace
 - 脚本默认会追加 `-EnablePlugins=ObjectNetInspector`，避免 Program 路径插件启用状态不稳定。
+
+## 8. 一键 Smoke 验证（程序侧）
+新增脚本：`scripts/Smoke-ObjectNetInsights.ps1`
+
+用途：
+- 自动调用 `Launch-UnrealInsights.ps1`（`-AutoQuit`）
+- 校验 UnrealInsights 日志关键标记是否出现：
+  - `Mounting Project plugin ObjectNetInspector`
+  - `ObjectNetInspector module started and tab spawner registered.`
+
+示例：
+
+```powershell
+pwsh -File .\scripts\Smoke-ObjectNetInsights.ps1 `
+  -ProjectPath "G:\workspace\ue5\Lyra\Lyra.uproject" `
+  -TraceFile "C:\Users\xianyun\AppData\Local\UnrealEngine\Common\UnrealTrace\Store\001\20260311_111505.utrace"
+```
+
+说明：
+- 脚本会输出 Net 相关日志提示（`NetProfiler/Networking Insights/NetTraceVersion`）用于辅助判断。
+- trace 是否真的包含 NetProfiler 数据，仍以 `Session Info -> Analysis Modules` 为准。
