@@ -2,6 +2,9 @@
 
 `ObjectNetInspector` 是一个 Unreal Insights 扩展面板插件，用于对象级网络分析（RPC / 属性同步 / 可归因载荷）。
 
+## 界面预览
+![Object Net Inspector](docs/images/object-net-inspector.png)
+
 ## 作者与维护
 - 第一作者：Codex (GPT-5, OpenAI)
 - 项目发起与主维护：xianyun
@@ -88,6 +91,24 @@ pwsh -File .\scripts\Launch-UnrealInsights.ps1 `
 1. 优先在 `Provider` 层加能力，再让 UI 订阅 revision 刷新
 2. 避免在 Tick 做全量扫描，优先使用缓存+版本号
 
+## AI 二次开发提示词（可直接复制）
+```text
+你现在是这个仓库的 Unreal C++ 插件协作开发者，请严格按以下步骤工作：
+1) 先读 README.md、docs/WORKLOG.md、docs/DESIGN_NOTES.md、docs/TESTING.md。
+2) 理解架构分层：Bridge(Trace API 适配) -> Analyzer/Aggregator -> Provider -> Slate UI。
+3) 在不破坏现有行为前提下实现需求；优先小步修改，避免一次性大重构。
+4) 涉及分类规则时，必须同步修改 ObjectNetEventClassifierTests.cpp 回归用例。
+5) 涉及元数据映射时，必须同步补充 Metadata/Provider 测试。
+6) 修改后运行：
+   pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "<YourProject>.uproject"
+7) 输出结果时给出：
+   - 改了哪些文件
+   - 为什么这样改
+   - 测试结果（成功/失败）
+   - 可能风险与后续建议
+8) 最后同步更新 docs/WORKLOG.md 与 docs/DESIGN_NOTES.md。
+```
+
 ## 质量与提交流程
 - 提交前至少跑：
 ```powershell
@@ -111,4 +132,11 @@ pwsh -File .\scripts\Run-ObjectNetTests.ps1 -ProjectPath "<YourProject>.uproject
 - 完成 UE5.6/5.7 跨版本回归矩阵
 
 ## License
-当前仓库未单独声明 License。若计划公开发布到 GitHub，建议先补充 `LICENSE` 文件（如 MIT/Apache-2.0）。
+本项目使用 MIT License（见 [LICENSE](LICENSE)）。
+
+你可以自由用于个人/商业项目，包括：
+- 使用、复制、修改、合并
+- 发布、分发、再许可
+- 私有闭源或开源二次发布
+
+仅需保留原始版权与许可声明。
