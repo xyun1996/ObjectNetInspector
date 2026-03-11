@@ -130,6 +130,7 @@
   - 确认 Program 侧二进制必须存在：`UnrealInsights-ObjectNetInspector.dll`
   - 构建命令补充 `-EnablePlugins=ObjectNetInspector`
   - `Launch-UnrealInsights.ps1` 增加启动前 DLL 预检与明确报错提示
+  - `Lyra.uproject` 增加 `ObjectNetInspector` 启用项；脚本新增 `-ForceEnablePluginArg` 以支持命令行强制启用模式
 
 ## 7. 文档约定
 - 开发过程中同步维护 `docs/DESIGN_NOTES.md`，记录设计思路与关键取舍。

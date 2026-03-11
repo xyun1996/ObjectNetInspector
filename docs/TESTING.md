@@ -110,3 +110,4 @@ pwsh -File .\scripts\Launch-UnrealInsights.ps1
 - `-TraceFile "G:\path\to\sample.utrace"`：指定 trace 文件
 - `-AutoQuit`：打开并自动退出（适合脚本验证）
 - `-DisableOtherPlugins`：仅启用 ObjectNetInspector（排查插件冲突）
+- `-ForceEnablePluginArg`：强制追加 `-EnablePlugins=ObjectNetInspector`（仅在需要命令行强制启用时使用）

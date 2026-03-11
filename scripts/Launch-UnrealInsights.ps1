@@ -11,7 +11,9 @@ param(
 
     [switch]$AutoQuit,
 
-    [switch]$DisableOtherPlugins
+    [switch]$DisableOtherPlugins,
+
+    [switch]$ForceEnablePluginArg
 )
 
 function Resolve-UProjectPath {
@@ -148,6 +150,9 @@ if ($AutoQuit.IsPresent) {
 
 if ($DisableOtherPlugins.IsPresent) {
     $args += "-DisableAllPlugins"
+    $args += "-EnablePlugins=ObjectNetInspector"
+}
+elseif ($ForceEnablePluginArg.IsPresent) {
     $args += "-EnablePlugins=ObjectNetInspector"
 }
 
