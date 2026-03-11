@@ -8,6 +8,7 @@ FObjectNetProvider::FObjectNetProvider()
     , LastUnknownEventCount(0)
     , LastPacketRefEventCount(0)
     , ViewRevision(0)
+    , SelectionRevision(0)
 {
 }
 
@@ -65,7 +66,7 @@ void FObjectNetProvider::SetSelectedObjectId(const TOptional<uint64> InObjectId)
 
     SelectedObjectId = InObjectId;
     InvalidateSelectionCaches();
-    ++ViewRevision;
+    ++SelectionRevision;
 }
 
 TOptional<uint64> FObjectNetProvider::GetSelectedObjectId() const
@@ -187,6 +188,11 @@ uint64 FObjectNetProvider::GetViewRevision() const
     return ViewRevision;
 }
 
+uint64 FObjectNetProvider::GetSelectionRevision() const
+{
+    return SelectionRevision;
+}
+
 FObjectNetTraceReader& FObjectNetProvider::GetReader()
 {
     return TraceReader;
@@ -213,6 +219,7 @@ void FObjectNetProvider::RebuildViewState()
         {
             SelectedObjectId.Reset();
             InvalidateSelectionCaches();
+            ++SelectionRevision;
         }
     }
 

@@ -18,8 +18,11 @@ struct FRowItem
 enum class ESortColumn : uint8
 {
     Time,
+    Direction,
     Connection,
+    Type,
     Name,
+    Packet,
     Bits
 };
 
@@ -66,6 +69,7 @@ public:
         SortColumn = ObjectNetEventTable::ESortColumn::Time;
         SortMode = EColumnSortMode::Ascending;
         CachedRevision = Provider->GetViewRevision();
+        CachedSelectionRevision = Provider->GetSelectionRevision();
 
         RebuildRows();
 
@@ -88,26 +92,38 @@ public:
                 + SHeaderRow::Column(TEXT("Direction"))
                 .FixedWidth(85.0f)
                 .DefaultLabel(FText::FromString(TEXT("Direction")))
+                .SortMode(this, &SObjectNetEventTable::GetSortModeForDirection)
+                .OnSort(this, &SObjectNetEventTable::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("Conn"))
                 .FixedWidth(70.0f)
                 .DefaultLabel(FText::FromString(TEXT("Connection")))
+                .SortMode(this, &SObjectNetEventTable::GetSortModeForConnection)
+                .OnSort(this, &SObjectNetEventTable::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("Type"))
                 .FixedWidth(85.0f)
                 .DefaultLabel(FText::FromString(TEXT("Type")))
+                .SortMode(this, &SObjectNetEventTable::GetSortModeForType)
+                .OnSort(this, &SObjectNetEventTable::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("Name"))
                 .FillWidth(0.46f)
                 .DefaultLabel(FText::FromString(TEXT("Name")))
+                .SortMode(this, &SObjectNetEventTable::GetSortModeForName)
+                .OnSort(this, &SObjectNetEventTable::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("Packet"))
                 .FixedWidth(65.0f)
                 .DefaultLabel(FText::FromString(TEXT("Packet")))
+                .SortMode(this, &SObjectNetEventTable::GetSortModeForPacket)
+                .OnSort(this, &SObjectNetEventTable::OnSortRequested)
 
                 + SHeaderRow::Column(TEXT("BitsBytes"))
                 .FixedWidth(150.0f)
                 .DefaultLabel(FText::FromString(TEXT("Bits/Bytes")))
+                .SortMode(this, &SObjectNetEventTable::GetSortModeForBits)
+                .OnSort(this, &SObjectNetEventTable::OnSortRequested)
             )
         ];
     }
@@ -117,9 +133,11 @@ public:
         SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
 
         const uint64 NewRevision = Provider->GetViewRevision();
-        if (NewRevision != CachedRevision)
+        const uint64 NewSelectionRevision = Provider->GetSelectionRevision();
+        if (NewRevision != CachedRevision || NewSelectionRevision != CachedSelectionRevision)
         {
             CachedRevision = NewRevision;
+            CachedSelectionRevision = NewSelectionRevision;
             RebuildRows();
             ListView->RequestListRefresh();
         }
@@ -157,10 +175,16 @@ private:
 
             switch (SortColumn)
             {
+            case ObjectNetEventTable::ESortColumn::Direction:
+                return CompareU64(static_cast<uint8>(L.Direction), static_cast<uint8>(R.Direction));
             case ObjectNetEventTable::ESortColumn::Connection:
                 return CompareU64(L.ConnectionId, R.ConnectionId);
+            case ObjectNetEventTable::ESortColumn::Type:
+                return CompareU64(static_cast<uint8>(L.Kind), static_cast<uint8>(R.Kind));
             case ObjectNetEventTable::ESortColumn::Name:
                 return (SortMode == EColumnSortMode::Ascending) ? (L.EventName < R.EventName) : (L.EventName > R.EventName);
+            case ObjectNetEventTable::ESortColumn::Packet:
+                return CompareU64(L.PacketId, R.PacketId);
             case ObjectNetEventTable::ESortColumn::Bits:
             {
                 const uint64 LBits = L.BitCount.IsSet() ? L.BitCount.GetValue() : 0ull;
@@ -225,9 +249,21 @@ private:
         {
             SortColumn = ObjectNetEventTable::ESortColumn::Connection;
         }
+        else if (ColumnId == TEXT("Direction"))
+        {
+            SortColumn = ObjectNetEventTable::ESortColumn::Direction;
+        }
+        else if (ColumnId == TEXT("Type"))
+        {
+            SortColumn = ObjectNetEventTable::ESortColumn::Type;
+        }
         else if (ColumnId == TEXT("Name"))
         {
             SortColumn = ObjectNetEventTable::ESortColumn::Name;
+        }
+        else if (ColumnId == TEXT("Packet"))
+        {
+            SortColumn = ObjectNetEventTable::ESortColumn::Packet;
         }
         else if (ColumnId == TEXT("BitsBytes"))
         {
@@ -247,6 +283,36 @@ private:
         return (SortColumn == ObjectNetEventTable::ESortColumn::Time) ? SortMode : EColumnSortMode::None;
     }
 
+    EColumnSortMode::Type GetSortModeForDirection() const
+    {
+        return (SortColumn == ObjectNetEventTable::ESortColumn::Direction) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForConnection() const
+    {
+        return (SortColumn == ObjectNetEventTable::ESortColumn::Connection) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForType() const
+    {
+        return (SortColumn == ObjectNetEventTable::ESortColumn::Type) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForName() const
+    {
+        return (SortColumn == ObjectNetEventTable::ESortColumn::Name) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForPacket() const
+    {
+        return (SortColumn == ObjectNetEventTable::ESortColumn::Packet) ? SortMode : EColumnSortMode::None;
+    }
+
+    EColumnSortMode::Type GetSortModeForBits() const
+    {
+        return (SortColumn == ObjectNetEventTable::ESortColumn::Bits) ? SortMode : EColumnSortMode::None;
+    }
+
 private:
     TSharedPtr<FObjectNetProvider> Provider;
     TArray<TSharedPtr<ObjectNetEventTable::FRowItem>> Rows;
@@ -254,6 +320,7 @@ private:
     ObjectNetEventTable::ESortColumn SortColumn;
     EColumnSortMode::Type SortMode;
     uint64 CachedRevision = 0;
+    uint64 CachedSelectionRevision = 0;
 };
 
 TSharedRef<SWidget> MakeObjectNetEventTableWidget(const TSharedRef<FObjectNetProvider>& Provider)

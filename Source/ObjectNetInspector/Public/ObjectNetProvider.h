@@ -39,6 +39,7 @@ public:
     int32 GetLastPacketRefEventCount() const;
     double GetLastPacketRefRatio() const;
     uint64 GetViewRevision() const;
+    uint64 GetSelectionRevision() const;
 
     FObjectNetTraceReader& GetReader();
     const FObjectNetTraceReader& GetReader() const;
@@ -63,4 +64,5 @@ private:
     int32 LastUnknownEventCount;
     int32 LastPacketRefEventCount;
     uint64 ViewRevision;
+    uint64 SelectionRevision;
 };
